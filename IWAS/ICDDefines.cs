@@ -51,27 +51,27 @@ namespace IWAS
         public class HEADER
         {
             [MarshalAs(UnmanagedType.U4)]
-            public uint sof;
+            public uint msgSOF;
             [MarshalAs(UnmanagedType.U4)]
-            public uint id;
+            public uint msgID;
             [MarshalAs(UnmanagedType.U4)]
-            public uint size;
+            public uint msgSize;
             [MarshalAs(UnmanagedType.U4)]
-            public uint type;
+            public uint msgType;
             [MarshalAs(UnmanagedType.U4)]
-            public uint error;
+            public uint msgErr;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
-            public string time;
+            public string msgTime;
 
             static public void FillHeader(object obj, COMMAND id, TYPE type)
             {
                 HEADER head = obj as HEADER;
-                head.id = (uint)id;
-                head.size = (uint)Marshal.SizeOf(obj);
-                head.sof = (uint)MAGIC.SOF;
-                head.type = (uint)type;
-                head.error = (uint)ERRORCODE.NOERROR;
-                head.time = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                head.msgID = (uint)id;
+                head.msgSize = (uint)Marshal.SizeOf(obj);
+                head.msgSOF = (uint)MAGIC.SOF;
+                head.msgType = (uint)type;
+                head.msgErr = (uint)ERRORCODE.NOERROR;
+                head.msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
 
             }
             static public int HeaderSize()
@@ -130,13 +130,15 @@ namespace IWAS
             public uint taskID;
             [MarshalAs(UnmanagedType.U4)]
             public uint cmdID;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string createTime;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string kind;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string access;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string mainCategory;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string subCategory;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string title;
@@ -152,12 +154,30 @@ namespace IWAS
             public uint preterm;
             [MarshalAs(UnmanagedType.U4)]
             public uint preDue;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string state;
             [MarshalAs(UnmanagedType.U4)]
             public uint progress;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string priority;
+
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        public class TaskEdit
+        {
+            [MarshalAs(UnmanagedType.U4)]
+            public uint editTaskID;
+            [MarshalAs(UnmanagedType.U4)]
+            public uint taskID;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string column;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string createTime;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string user;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string info;
 
         }
 
@@ -173,10 +193,12 @@ namespace IWAS
             [MarshalAs(UnmanagedType.U4)]
             public uint FileID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string createTime;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string user;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string access;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string priority;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string message;
@@ -196,11 +218,13 @@ namespace IWAS
             public uint packetIDX;
             [MarshalAs(UnmanagedType.U4)]
             public uint packetCNT;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string fileName;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string fileDir;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 20)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string ext;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string user;
@@ -212,6 +236,8 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Message : HEADER
         {
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string message;
 

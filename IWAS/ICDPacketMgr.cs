@@ -60,7 +60,7 @@ namespace IWAS
                 if (queue.TryDequeue(out pack))
                 {
                     HEADER head = HEADER.GetHeaderInfo(pack.buf);
-                    HEADER obj = CreateIcdObject((COMMAND)head.id);
+                    HEADER obj = CreateIcdObject((COMMAND)head.msgID);
                     HEADER.Deserialize(obj, ref pack.buf);
                     OnRecv.Invoke(pack.ClientID, obj);
                 }

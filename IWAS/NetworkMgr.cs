@@ -184,13 +184,13 @@ namespace IWAS
                 return false;
 
             ICD.HEADER head = ICD.HEADER.GetHeaderInfo(buf);
-            if (head.sof != (uint)ICD.MAGIC.SOF)
+            if (head.msgSOF != (uint)ICD.MAGIC.SOF)
             {
                 client.mem = new MemoryStream(MAX_CLIENT_BUF);
                 return false;
             }
 
-            uint msgSize = head.size;
+            uint msgSize = head.msgSize;
             if (nRecvLen < msgSize)
                 return false;
 

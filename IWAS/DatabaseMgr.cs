@@ -55,7 +55,7 @@ namespace IWAS
                 "VALUES ('{0}', '{1}', '{2}', {3}",     //values list
                 info.userID,
                 info.userPW,
-                info.time,
+                info.msgTime,
                 2);
 
 
@@ -69,8 +69,27 @@ namespace IWAS
                 "INSERT INTO task " +
                 "(type, time, creator, access, title, director, worker, chatID) " +
                 "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
-                info.type,
-                info.time,
+                info.msgType,
+                info.msgTime,
+                info.creator,
+                info.access,
+                info.title,
+                info.director,
+                info.worker,
+                0);
+
+            MySqlCommand cmd = new MySqlCommand(sql, mConn);
+            int ret = cmd.ExecuteNonQuery();
+            return ret;
+        }
+        public static int EditTask(ICD.Task info)
+        {
+            string sql = String.Format(
+                "INSERT INTO task " +
+                "(type, time, creator, access, title, director, worker, chatID) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
+                info.msgType,
+                info.msgTime,
                 info.creator,
                 info.access,
                 info.title,
@@ -93,6 +112,69 @@ namespace IWAS
                 return null;
 
             return ds.Tables["TASK"];
+        }
+        public static DataRow GetTaskRoot(int taskID)
+        {
+            string sql = "SELECT * FROM task WHERE id=" + taskID;
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if (adapter.Fill(ds, "TASK") == 0)
+                return null;
+
+            return ds.Tables["TASK"].Rows[0];
+        }
+        public static DataTable GetTaskHistory(int taskID)
+        {
+            string sql = "SELECT * FROM taskHistory WHERE taskID=" + taskID +
+                " ORDER BY time ASC";
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if(adapter.Fill(ds, "TASKHis") == 0)
+                return null;
+
+            return ds.Tables["TASKHis"];
+        }
+        public static void GetTaskLatest(int taskID, ref ICD.Task task)
+        {
+            DataRow taskRoot = GetTaskRoot(taskID);
+            task.taskID = (uint)taskRoot["id"];
+            task.cmdID = (uint)taskRoot["type"];
+            task.createTime = taskRoot["time"].ToString();
+            task.creator = taskRoot["creator"].ToString();
+            task.access = taskRoot["access"].ToString();
+            task.title = taskRoot["title"].ToString();
+            task.director = taskRoot["director"].ToString();
+            task.worker = taskRoot["woker"].ToString();
+
+            DataTable taskHis = GetTaskHistory(taskID);
+            foreach(DataRow item in taskHis.Rows)
+            {
+                string type = item["type"].ToString();
+                string data = item["command"].ToString();
+                switch(type)
+                {
+                    case "title":
+                        task.title = data;
+                        break;
+                    case "access":
+                        task.access = data;
+                        break;
+                    case "director":
+                        task.director = data;
+                        break;
+                    case "woker":
+                        task.worker = data;
+                        break;
+                    case "progress":
+                        task.progress = uint.Parse(data);
+                        break;
+                    default:
+                        LOG.warn();
+                        break;
+                }
+            }
         }
     }
 }

@@ -57,7 +57,7 @@ namespace IWAS
         private void OnRecv_ICDMessages(int clientID, ICD.HEADER o)
         {
             ICD.HEADER obj = o as ICD.HEADER;
-            switch ((ICD.COMMAND)obj.id)
+            switch ((ICD.COMMAND)obj.msgID)
             {
                 case ICD.COMMAND.TaskInfo:
                     OnRecv_TaskInfo(obj);
@@ -69,7 +69,7 @@ namespace IWAS
 
         private void OnRecv_TaskInfo(ICD.HEADER obj)
         {
-            if(ICD.ERRORCODE.NOERROR != (ICD.ERRORCODE)obj.error)
+            if(ICD.ERRORCODE.NOERROR != (ICD.ERRORCODE)obj.msgErr)
             {
                 LOG.warn();
                 return;

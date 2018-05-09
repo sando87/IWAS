@@ -43,7 +43,7 @@ namespace IWAS
         private void OnRecv_ICDMessages(int clientID, ICD.HEADER o)
         {
             ICD.HEADER obj = o as ICD.HEADER;
-            switch ((ICD.COMMAND)obj.id)
+            switch ((ICD.COMMAND)obj.msgID)
             {
                 case ICD.COMMAND.NewUser:
                     OnRecv_NewUser(obj);
@@ -58,7 +58,7 @@ namespace IWAS
 
         private void OnRecv_NewUser(ICD.HEADER obj)
         {
-            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.error;
+            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.msgErr;
             switch (curErr)
             {
                 case ICD.ERRORCODE.NOERROR:
@@ -73,7 +73,7 @@ namespace IWAS
         }
         private void OnRecv_Login(ICD.HEADER obj)
         {
-            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.error;
+            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.msgErr;
             switch (curErr)
             {
                 case ICD.ERRORCODE.NOERROR:
