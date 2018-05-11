@@ -60,6 +60,7 @@
     </Compile>
     <Compile Include="ICDDefines.cs" />
     <Compile Include="ICDPacketMgr.cs" />
+    <Compile Include="MsgCtrl.cs" />
     <Compile Include="NetworkMgr.cs" />
     <Compile Include="NewTask.cs">
       <SubType>Form</SubType>

@@ -82,20 +82,16 @@ namespace IWAS
             int ret = cmd.ExecuteNonQuery();
             return ret;
         }
-        public static int EditTask(ICD.Task info)
+        public static int EditTask(ICD.TaskEdit info)
         {
             string sql = string.Format(
-                "INSERT INTO task " +
-                "(type, time, creator, access, title, director, worker, chatID) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
-                info.msgType,
+                "INSERT INTO taskHistory " +
+                "(taskID, time, user, info) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}')",
+                info.taskID,
                 info.msgTime,
-                info.creator,
-                info.access,
-                info.title,
-                info.director,
-                info.worker,
-                0);
+                info.msgUser,
+                info.info );
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
             int ret = cmd.ExecuteNonQuery();
@@ -151,29 +147,34 @@ namespace IWAS
             DataTable taskHis = GetTaskHistory(taskID);
             foreach(DataRow item in taskHis.Rows)
             {
-                string type = item["type"].ToString();
-                string data = item["command"].ToString();
-                switch(type)
+                string value = item["info"].ToString();
+                string[] infos = value.Split(',');
+                foreach(string info in infos)
                 {
-                    case "title":
-                        task.title = data;
-                        break;
-                    case "access":
-                        task.access = data;
-                        break;
-                    case "director":
-                        task.director = data;
-                        break;
-                    case "woker":
-                        task.worker = data;
-                        break;
-                    case "progress":
-                        task.progress = uint.Parse(data);
-                        break;
-                    default:
-                        LOG.warn();
-                        break;
+                    string[] data = info.Split(':');
+                    switch (data[0])
+                    {
+                        case "title":
+                            task.title = data[1];
+                            break;
+                        case "access":
+                            task.access = data[1];
+                            break;
+                        case "director":
+                            task.director = data[1];
+                            break;
+                        case "woker":
+                            task.worker = data[1];
+                            break;
+                        case "progress":
+                            task.progress = uint.Parse(data[1]);
+                            break;
+                        default:
+                            LOG.warn();
+                            break;
+                    }
                 }
+                
             }
         }
     }

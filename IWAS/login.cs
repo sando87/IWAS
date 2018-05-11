@@ -84,7 +84,7 @@ namespace IWAS
                         MyTasks task = new MyTasks();
                         task.ShowDialog();
                         ICD.HEADER msg = new ICD.HEADER();
-                        ICD.HEADER.FillHeader(msg, ICD.COMMAND.TaskList, ICD.TYPE.REQ);
+                        ICD.HEADER.FillHeader(msg, ICD.COMMAND.TaskList, ICD.TYPE.REQ, "root");
                         ICDPacketMgr.GetInst().sendMsgToServer(msg);
                     }
                     break;
@@ -123,7 +123,7 @@ namespace IWAS
                 if (textBox2.Text == textBox3.Text)
                 {
                     ICD.User obj = new ICD.User();
-                    ICD.HEADER.FillHeader(obj, ICD.COMMAND.NewUser, ICD.TYPE.REQ);
+                    ICD.HEADER.FillHeader(obj, ICD.COMMAND.NewUser, ICD.TYPE.REQ, "root");
                     obj.userID = textBox1.Text;
                     obj.userPW = textBox2.Text;
                     ICDPacketMgr.GetInst().sendMsgToServer(obj);
@@ -138,7 +138,7 @@ namespace IWAS
             {
                 //로그인 요청
                 ICD.User obj = new ICD.User();
-                ICD.HEADER.FillHeader(obj, ICD.COMMAND.Login, ICD.TYPE.REQ);
+                ICD.HEADER.FillHeader(obj, ICD.COMMAND.Login, ICD.TYPE.REQ, "root");
                 obj.userID = textBox1.Text;
                 obj.userPW = textBox2.Text;
                 ICDPacketMgr.GetInst().sendMsgToServer(obj);

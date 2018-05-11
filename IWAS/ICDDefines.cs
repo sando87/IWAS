@@ -25,7 +25,8 @@ namespace IWAS
             UploadFile,
             DownloadFile,
             LogMessage,
-            Search,            
+            Search,
+            MAX_COUNT,
         }
         public enum TYPE
         {
@@ -60,10 +61,12 @@ namespace IWAS
             public uint msgType;
             [MarshalAs(UnmanagedType.U4)]
             public uint msgErr;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 30)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string msgUser;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgTime;
 
-            static public void FillHeader(object obj, COMMAND id, TYPE type)
+            static public void FillHeader(object obj, COMMAND id, TYPE type, string user)
             {
                 HEADER head = obj as HEADER;
                 head.msgID = (uint)id;
@@ -71,8 +74,8 @@ namespace IWAS
                 head.msgSOF = (uint)MAGIC.SOF;
                 head.msgType = (uint)type;
                 head.msgErr = (uint)ERRORCODE.NOERROR;
+                head.msgUser = user;
                 head.msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
-
             }
             static public int HeaderSize()
             {
@@ -164,18 +167,12 @@ namespace IWAS
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-        public class TaskEdit
+        public class TaskEdit : HEADER
         {
             [MarshalAs(UnmanagedType.U4)]
             public uint editTaskID;
             [MarshalAs(UnmanagedType.U4)]
             public uint taskID;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string column;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string createTime;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string user;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string info;
 
