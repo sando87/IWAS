@@ -49,7 +49,7 @@ namespace IWAS
         }
         public static int NewUser(ICD.User info)
         {
-            string sql = String.Format(
+            string sql = string.Format(
                 "INSERT INTO user " +       //user DataBase
                 "(id, pw, date, auth) " +   //Column name
                 "VALUES ('{0}', '{1}', '{2}', {3}",     //values list
@@ -65,7 +65,7 @@ namespace IWAS
         }
         public static int NewTask(ICD.Task info)
         {
-            string sql = String.Format(
+            string sql = string.Format(
                 "INSERT INTO task " +
                 "(type, time, creator, access, title, director, worker, chatID) " +
                 "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
@@ -84,7 +84,7 @@ namespace IWAS
         }
         public static int EditTask(ICD.Task info)
         {
-            string sql = String.Format(
+            string sql = string.Format(
                 "INSERT INTO task " +
                 "(type, time, creator, access, title, director, worker, chatID) " +
                 "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
