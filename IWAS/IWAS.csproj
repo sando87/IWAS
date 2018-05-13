@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientInfo.cs" />
     <Compile Include="DatabaseMgr.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">

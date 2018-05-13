@@ -66,6 +66,16 @@ namespace IWAS
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgTime;
 
+            public void FillClientHeader(COMMAND id)
+            {
+                msgID = (uint)id;
+                msgSize = (uint)Marshal.SizeOf(this);
+                msgSOF = (uint)MAGIC.SOF;
+                msgType = (uint)TYPE.REQ;
+                msgErr = (uint)ERRORCODE.NOERROR;
+                msgUser = ClientInfo.mMyInfo.msgUser;
+                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            }
             static public void FillHeader(object obj, COMMAND id, TYPE type, string user)
             {
                 HEADER head = obj as HEADER;

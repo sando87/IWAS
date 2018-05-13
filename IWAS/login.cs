@@ -79,12 +79,13 @@ namespace IWAS
                 case ICD.ERRORCODE.NOERROR:
                     MessageBox.Show(MSG_SUCCESS_LOGIN);
                     {
+                        ClientInfo.mMyInfo = obj as ICD.User;
                         ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
                         this.Visible = false;
                         MyTasks task = new MyTasks();
                         task.ShowDialog();
                         ICD.HEADER msg = new ICD.HEADER();
-                        ICD.HEADER.FillHeader(msg, ICD.COMMAND.TaskList, ICD.TYPE.REQ, "root");
+                        msg.FillClientHeader(ICD.COMMAND.TaskList);
                         ICDPacketMgr.GetInst().sendMsgToServer(msg);
                     }
                     break;
@@ -123,7 +124,7 @@ namespace IWAS
                 if (textBox2.Text == textBox3.Text)
                 {
                     ICD.User obj = new ICD.User();
-                    ICD.HEADER.FillHeader(obj, ICD.COMMAND.NewUser, ICD.TYPE.REQ, "root");
+                    obj.FillClientHeader(ICD.COMMAND.NewUser);
                     obj.userID = textBox1.Text;
                     obj.userPW = textBox2.Text;
                     ICDPacketMgr.GetInst().sendMsgToServer(obj);
@@ -138,7 +139,7 @@ namespace IWAS
             {
                 //로그인 요청
                 ICD.User obj = new ICD.User();
-                ICD.HEADER.FillHeader(obj, ICD.COMMAND.Login, ICD.TYPE.REQ, "root");
+                obj.FillClientHeader(ICD.COMMAND.Login);
                 obj.userID = textBox1.Text;
                 obj.userPW = textBox2.Text;
                 ICDPacketMgr.GetInst().sendMsgToServer(obj);
