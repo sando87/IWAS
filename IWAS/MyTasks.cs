@@ -84,8 +84,6 @@ namespace IWAS
         {
             NewTask newTask = new NewTask();
             newTask.ShowDialog();
-            ICD.Task msg = newTask.mNewTaskInfo;
-            ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
 
         private void TaskList_MouseDoubleClick(object sender, MouseEventArgs e)

@@ -145,18 +145,20 @@ namespace IWAS
             public string subCategory;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string title;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string comment;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string creator;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string director;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string worker;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint preLaunch;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint preterm;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint preDue;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string preLaunch;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string preterm;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string preDue;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string state;
             [MarshalAs(UnmanagedType.U4)]

@@ -88,6 +88,9 @@
     <EmbeddedResource Include="MyTasks.resx">
       <DependentUpon>MyTasks.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="NewTask.resx">
+      <DependentUpon>NewTask.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
