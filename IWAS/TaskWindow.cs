@@ -18,5 +18,10 @@ namespace IWAS
             mTask = task;
             InitializeComponent();
         }
+
+        private void btnEdit_Click(object sender, EventArgs e)
+        {
+            
+        }
     }
 }
