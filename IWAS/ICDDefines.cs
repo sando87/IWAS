@@ -13,6 +13,7 @@ namespace IWAS
         {
             NONE,
             NewUser,
+            UserList,
             Login,
             Logout,
             TaskNew,
@@ -73,7 +74,7 @@ namespace IWAS
                 msgSOF = (uint)MAGIC.SOF;
                 msgType = (uint)TYPE.REQ;
                 msgErr = (uint)ERRORCODE.NOERROR;
-                msgUser = ClientInfo.mMyInfo.msgUser;
+                msgUser = MyInfo.mMyInfo.msgUser;
                 msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             }
             static public void FillHeader(object obj, COMMAND id, TYPE type, string user)
@@ -245,8 +246,6 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Message : HEADER
         {
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string message;
 

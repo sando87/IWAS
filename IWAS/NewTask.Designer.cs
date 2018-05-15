@@ -44,8 +44,6 @@
             this.label7 = new System.Windows.Forms.Label();
             this.cbPriority = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
-            this.cbDirector = new System.Windows.Forms.ComboBox();
-            this.cbWorker = new System.Windows.Forms.ComboBox();
             this.label9 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.tbTitle = new System.Windows.Forms.TextBox();
@@ -54,6 +52,8 @@
             this.label12 = new System.Windows.Forms.Label();
             this.btnNewTask = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.btnDirector = new System.Windows.Forms.Button();
+            this.btnWorker = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // cbType
@@ -207,28 +207,10 @@
             this.label8.TabIndex = 2;
             this.label8.Text = "중요도";
             // 
-            // cbDirector
-            // 
-            this.cbDirector.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbDirector.FormattingEnabled = true;
-            this.cbDirector.Location = new System.Drawing.Point(285, 92);
-            this.cbDirector.Name = "cbDirector";
-            this.cbDirector.Size = new System.Drawing.Size(100, 20);
-            this.cbDirector.TabIndex = 0;
-            // 
-            // cbWorker
-            // 
-            this.cbWorker.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cbWorker.FormattingEnabled = true;
-            this.cbWorker.Location = new System.Drawing.Point(285, 118);
-            this.cbWorker.Name = "cbWorker";
-            this.cbWorker.Size = new System.Drawing.Size(100, 20);
-            this.cbWorker.TabIndex = 0;
-            // 
             // label9
             // 
             this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(238, 95);
+            this.label9.Location = new System.Drawing.Point(238, 98);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(41, 12);
             this.label9.TabIndex = 2;
@@ -237,7 +219,7 @@
             // label10
             // 
             this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(238, 121);
+            this.label10.Location = new System.Drawing.Point(238, 127);
             this.label10.Name = "label10";
             this.label10.Size = new System.Drawing.Size(41, 12);
             this.label10.TabIndex = 2;
@@ -296,11 +278,33 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // btnDirector
+            // 
+            this.btnDirector.Location = new System.Drawing.Point(285, 93);
+            this.btnDirector.Name = "btnDirector";
+            this.btnDirector.Size = new System.Drawing.Size(100, 23);
+            this.btnDirector.TabIndex = 4;
+            this.btnDirector.Text = "name";
+            this.btnDirector.UseVisualStyleBackColor = true;
+            this.btnDirector.Click += new System.EventHandler(this.btnDirector_Click);
+            // 
+            // btnWorker
+            // 
+            this.btnWorker.Location = new System.Drawing.Point(285, 122);
+            this.btnWorker.Name = "btnWorker";
+            this.btnWorker.Size = new System.Drawing.Size(100, 23);
+            this.btnWorker.TabIndex = 4;
+            this.btnWorker.Text = "name";
+            this.btnWorker.UseVisualStyleBackColor = true;
+            this.btnWorker.Click += new System.EventHandler(this.btnWorker_Click);
+            // 
             // NewTask
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(404, 299);
+            this.Controls.Add(this.btnWorker);
+            this.Controls.Add(this.btnDirector);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnNewTask);
             this.Controls.Add(this.label12);
@@ -320,9 +324,7 @@
             this.Controls.Add(this.tbTerm);
             this.Controls.Add(this.tbDue);
             this.Controls.Add(this.tbLaunch);
-            this.Controls.Add(this.cbWorker);
             this.Controls.Add(this.cbPriority);
-            this.Controls.Add(this.cbDirector);
             this.Controls.Add(this.cbSubCate);
             this.Controls.Add(this.cbMainCate);
             this.Controls.Add(this.cbAccess);
@@ -355,11 +357,11 @@
         private System.Windows.Forms.TextBox tbDue;
         private System.Windows.Forms.TextBox tbTerm;
         private System.Windows.Forms.ComboBox cbPriority;
-        private System.Windows.Forms.ComboBox cbDirector;
-        private System.Windows.Forms.ComboBox cbWorker;
         private System.Windows.Forms.TextBox tbTitle;
         private System.Windows.Forms.TextBox tbComment;
         private System.Windows.Forms.Button btnNewTask;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.Button btnDirector;
+        private System.Windows.Forms.Button btnWorker;
     }
 }

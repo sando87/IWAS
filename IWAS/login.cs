@@ -79,7 +79,7 @@ namespace IWAS
                 case ICD.ERRORCODE.NOERROR:
                     MessageBox.Show(MSG_SUCCESS_LOGIN);
                     {
-                        ClientInfo.mMyInfo = obj as ICD.User;
+                        MyInfo.mMyInfo = obj as ICD.User;
                         ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
                         this.Visible = false;
                         MyTasks task = new MyTasks();

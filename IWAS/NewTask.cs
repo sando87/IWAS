@@ -33,8 +33,8 @@ namespace IWAS
             msgTask.preterm = tbTerm.Text;
             msgTask.priority = cbPriority.Text;
             //user listing
-            msgTask.director = cbDirector.Text;
-            msgTask.worker = cbWorker.Text;
+            msgTask.director = btnDirector.Text;
+            msgTask.worker = btnWorker.Text;
             msgTask.title = tbTitle.Text;
             msgTask.comment = tbComment.Text;
 
@@ -47,5 +47,24 @@ namespace IWAS
             Close();
         }
 
+        private void btnDirector_Click(object sender, EventArgs e)
+        {
+            UserList dlg = new UserList();
+            dlg.ShowDialog();
+            if(dlg.mSelectedUser != null)
+            {
+                btnDirector.Text = dlg.mSelectedUser;
+            }
+        }
+
+        private void btnWorker_Click(object sender, EventArgs e)
+        {
+            UserList dlg = new UserList();
+            dlg.ShowDialog();
+            if (dlg.mSelectedUser != null)
+            {
+                btnWorker.Text = dlg.mSelectedUser;
+            }
+        }
     }
 }

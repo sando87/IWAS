@@ -50,7 +50,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientInfo.cs" />
     <Compile Include="DatabaseMgr.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">
@@ -62,6 +61,12 @@
     <Compile Include="ICDDefines.cs" />
     <Compile Include="ICDPacketMgr.cs" />
     <Compile Include="MsgCtrl.cs" />
+    <Compile Include="MyInfo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MyInfo.Designer.cs">
+      <DependentUpon>MyInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="NetworkMgr.cs" />
     <Compile Include="NewTask.cs">
       <SubType>Form</SubType>
@@ -83,6 +88,12 @@
     <Compile Include="TaskWindow.Designer.cs">
       <DependentUpon>TaskWindow.cs</DependentUpon>
     </Compile>
+    <Compile Include="UserList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UserList.Designer.cs">
+      <DependentUpon>UserList.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="login.resx">
       <DependentUpon>login.cs</DependentUpon>
     </EmbeddedResource>
@@ -101,6 +112,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="UserList.resx">
+      <DependentUpon>UserList.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
