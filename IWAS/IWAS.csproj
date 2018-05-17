@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatabaseMgr.cs" />
+    <Compile Include="FifoBuffer.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">
       <SubType>Form</SubType>

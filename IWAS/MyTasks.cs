@@ -81,6 +81,16 @@ namespace IWAS
 
         private void NewTask_Click(object sender, EventArgs e)
         {
+            byte[] buf = { 0, 1, 2, 3, 4, 5, 6 };
+            byte[] buf1 = { 20, 21, 22, 23, 24 };
+            byte[] buf2 = { 30, 31, 32, 33, 34 };
+            FifoBuffer bufTest = new FifoBuffer();
+            bufTest.Push(buf);
+            byte a = bufTest[0];
+            byte b = bufTest[2];
+            short c = bufTest.readShort(0);
+            int d = bufTest.readInt(0);
+
             NewTask newTask = new NewTask();
             newTask.ShowDialog();
         }
