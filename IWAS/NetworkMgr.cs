@@ -29,14 +29,15 @@ namespace IWAS
         {
             public int id { get; set; }
             public TcpClient client { get; set; }
-            public MemoryStream mem { get; set; }
+            public FifoBuffer buf { get; set; }
             public string userName { get; set; }
         }
 
         private const int PORTNUM                   = 7000;
         private const int MAX_CLIENT_CNT            = 1000;
-        private const int MAX_CLIENT_BUF            = 4096;
         private const int MAX_SOCKET_BUF            = 1024;
+        private const int MAX_CLIENT_BUF            = 1024*1024;
+
 
         private Dictionary<string, int> mUserNameMap    = new Dictionary<string, int>();
         private ClientBuf[]             mClients        = new ClientBuf[MAX_CLIENT_CNT];
@@ -44,6 +45,7 @@ namespace IWAS
         private ManualResetEvent            mMRE        = new ManualResetEvent(false);
 
         public event EventHandler mRecv = null;
+        public event EventHandler mConn = null;
 
         async public void acceptAsync()
         {
@@ -143,7 +145,7 @@ namespace IWAS
             mClients[idx] = new ClientBuf();
             mClients[idx].id = newID;
             mClients[idx].client = newClient;
-            mClients[idx].mem = new MemoryStream(MAX_CLIENT_BUF);
+            mClients[idx].buf = new FifoBuffer(MAX_CLIENT_BUF);
             mClients[idx].userName = null;
 
             Task.Factory.StartNew(waitClient, mClients[idx]);
@@ -163,7 +165,7 @@ namespace IWAS
                 if (nBytes == 0)
                     break;
 
-                clientPack.mem.Write(buff, 0, nBytes);
+                clientPack.buf.Push(buff, nBytes);
                 if(pushPacket(ref clientPack))
                 {
                     mMRE.Set();
@@ -177,16 +179,16 @@ namespace IWAS
 
         private bool pushPacket(ref ClientBuf client)
         {
-            long nRecvLen = client.mem.Length;
-            byte[] buf = client.mem.GetBuffer();
+            long nRecvLen = client.buf.GetSize();
             int headSize = ICD.HEADER.HeaderSize();
             if (nRecvLen < headSize)
                 return false;
 
-            ICD.HEADER head = ICD.HEADER.GetHeaderInfo(buf);
+            byte[] headBuf = client.buf.readSize(headSize);
+            ICD.HEADER head = ICD.HEADER.GetHeaderInfo(headBuf);
             if (head.msgSOF != (uint)ICD.MAGIC.SOF)
             {
-                client.mem = new MemoryStream(MAX_CLIENT_BUF);
+                client.buf.Clear();
                 return false;
             }
 
@@ -197,10 +199,8 @@ namespace IWAS
             QueuePack pack = new QueuePack();
             pack.ClientID = client.id;
             pack.size = msgSize;
-            pack.buf = new byte[msgSize];
-            Array.Copy(buf, pack.buf, msgSize);
+            pack.buf = client.buf.Pop((int)msgSize);
             mQueue.Enqueue(pack);
-            client.mem = new MemoryStream(MAX_CLIENT_BUF);
 
             return true;
         }
@@ -209,7 +209,6 @@ namespace IWAS
         {
             int idx = id;
             ClientBuf clientPack = mClients[idx];
-            clientPack.mem.Close();
             clientPack.client.Close();
 
             if (clientPack.userName != null)
@@ -217,7 +216,7 @@ namespace IWAS
 
             clientPack.id = -1;
             clientPack.client = null;
-            clientPack.mem = null;
+            clientPack.buf = null;
             clientPack.userName = null;
             mClients[idx] = null;
         }
