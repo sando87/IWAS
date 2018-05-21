@@ -17,7 +17,7 @@ namespace IWAS
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
            // Application.Run(new Login());
-            Application.Run(new MyTasks());
+            Application.Run(new TaskWindow(null));
         }
     }
 }

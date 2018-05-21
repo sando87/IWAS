@@ -17,12 +17,17 @@ namespace IWAS
         private NetworkMgr() { }
         public static NetworkMgr GetInst() { return SingletonInstance; }
         
+        public enum NetType
+        {
+            NONE,CONNECT,DISCON,DATA
+        }
 
         public class QueuePack
         {
             public int ClientID = -1;
-            public byte[] buf = null;
-            public uint size = 0;
+            public string ipAddr = "";
+            public FifoBuffer buf = null;
+            public NetType type = NetType.NONE;
         }
 
         private class ClientBuf
@@ -45,7 +50,6 @@ namespace IWAS
         private ManualResetEvent            mMRE        = new ManualResetEvent(false);
 
         public event EventHandler mRecv = null;
-        public event EventHandler mConn = null;
 
         async public void acceptAsync()
         {
@@ -148,6 +152,14 @@ namespace IWAS
             mClients[idx].buf = new FifoBuffer(MAX_CLIENT_BUF);
             mClients[idx].userName = null;
 
+            QueuePack info = new QueuePack();
+            info.ClientID = newID;
+            info.buf = null;
+            info.ipAddr = ((IPEndPoint)newClient.Client.RemoteEndPoint).Address.ToString();
+            info.type = NetType.CONNECT;
+            mQueue.Enqueue(info);
+            mMRE.Set();
+
             Task.Factory.StartNew(waitClient, mClients[idx]);
             return newID;
         }
@@ -166,10 +178,13 @@ namespace IWAS
                     break;
 
                 clientPack.buf.Push(buff, nBytes);
-                if(pushPacket(ref clientPack))
-                {
-                    mMRE.Set();
-                }
+
+                QueuePack info = new QueuePack();
+                info.ClientID = clientPack.id;
+                info.buf = clientPack.buf;
+                mQueue.Enqueue(info);
+
+                mMRE.Set();
             }
 
 
@@ -177,48 +192,29 @@ namespace IWAS
             CloseClient(clientPack.id);
         }
 
-        private bool pushPacket(ref ClientBuf client)
-        {
-            long nRecvLen = client.buf.GetSize();
-            int headSize = ICD.HEADER.HeaderSize();
-            if (nRecvLen < headSize)
-                return false;
-
-            byte[] headBuf = client.buf.readSize(headSize);
-            ICD.HEADER head = ICD.HEADER.GetHeaderInfo(headBuf);
-            if (head.msgSOF != (uint)ICD.MAGIC.SOF)
-            {
-                client.buf.Clear();
-                return false;
-            }
-
-            uint msgSize = head.msgSize;
-            if (nRecvLen < msgSize)
-                return false;
-
-            QueuePack pack = new QueuePack();
-            pack.ClientID = client.id;
-            pack.size = msgSize;
-            pack.buf = client.buf.Pop((int)msgSize);
-            mQueue.Enqueue(pack);
-
-            return true;
-        }
-
         private void CloseClient(int id)
         {
             int idx = id;
             ClientBuf clientPack = mClients[idx];
-            clientPack.client.Close();
+
+            QueuePack info = new QueuePack();
+            info.ClientID = id;
+            info.buf = null;
+            info.ipAddr = ((IPEndPoint)clientPack.client.Client.RemoteEndPoint).Address.ToString();
+            info.type = NetType.DISCON;
+            mQueue.Enqueue(info);
+            mMRE.Set();
 
             if (clientPack.userName != null)
                 mUserNameMap.Remove(clientPack.userName);
 
+            clientPack.client.Close();
             clientPack.id = -1;
             clientPack.client = null;
             clientPack.buf = null;
             clientPack.userName = null;
             mClients[idx] = null;
+
         }
     }
 }
