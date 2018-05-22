@@ -17,28 +17,32 @@ namespace IWAS
         private NetworkMgr() { }
         public static NetworkMgr GetInst() { return SingletonInstance; }
         
+        public enum NetType
+        {
+            NONE,CONNECT,DISCON,DATA
+        }
 
         public class QueuePack
         {
             public int ClientID = -1;
-            public byte[] buf = null;
-            public uint size = 0;
+            public string ipAddr = "";
+            public FifoBuffer buf = null;
+            public NetType type = NetType.NONE;
         }
 
         private class ClientBuf
         {
             public int id { get; set; }
             public TcpClient client { get; set; }
-            public MemoryStream mem { get; set; }
-            public string userName { get; set; }
+            public FifoBuffer buf { get; set; }
         }
 
         private const int PORTNUM                   = 7000;
         private const int MAX_CLIENT_CNT            = 1000;
-        private const int MAX_CLIENT_BUF            = 4096;
         private const int MAX_SOCKET_BUF            = 1024;
+        private const int MAX_CLIENT_BUF            = 1024*1024;
 
-        private Dictionary<string, int> mUserNameMap    = new Dictionary<string, int>();
+
         private ClientBuf[]             mClients        = new ClientBuf[MAX_CLIENT_CNT];
         private ConcurrentQueue<QueuePack>  mQueue      = new ConcurrentQueue<QueuePack>();
         private ManualResetEvent            mMRE        = new ManualResetEvent(false);
@@ -77,15 +81,6 @@ namespace IWAS
                 mRecv.Invoke(mQueue, null);
             }
         }
-        public void WriteToServer(byte[] buf)
-        {
-            int idx = 0;
-            if (mClients[idx] == null)
-                return;
-
-            NetworkStream stream = mClients[idx].client.GetStream();
-            stream.Write(buf, 0, buf.Length);
-        }
         public void WriteToClient(int id, byte[] buf)
         {
             int idx = id;
@@ -94,33 +89,6 @@ namespace IWAS
 
             NetworkStream stream = mClients[idx].client.GetStream();
             stream.Write(buf, 0, buf.Length);
-        }
-        public void WriteToClient(string user, byte[] buf)
-        {
-            if ( !mUserNameMap.ContainsKey(user) )
-                return;
-
-            int id = mUserNameMap[user];
-            NetworkStream stream = mClients[id].client.GetStream();
-            stream.Write(buf, 0, buf.Length);
-        }
-        public void LoginUser(int id, string UserName)
-        {
-            int idx = id;
-            if (mClients[idx] == null)
-                return;
-
-            mClients[idx].userName = UserName;
-            mUserNameMap[UserName] = id;
-        }
-        public void LogoutUser(string UserName)
-        {
-            if (!mUserNameMap.ContainsKey(UserName))
-                return;
-
-            int id = mUserNameMap[UserName];
-            mClients[id].userName = null;
-            mUserNameMap.Remove(UserName);
         }
 
         private int findEmptyID()
@@ -143,8 +111,15 @@ namespace IWAS
             mClients[idx] = new ClientBuf();
             mClients[idx].id = newID;
             mClients[idx].client = newClient;
-            mClients[idx].mem = new MemoryStream(MAX_CLIENT_BUF);
-            mClients[idx].userName = null;
+            mClients[idx].buf = new FifoBuffer(MAX_CLIENT_BUF);
+
+            QueuePack info = new QueuePack();
+            info.ClientID = newID;
+            info.buf = null;
+            info.ipAddr = ((IPEndPoint)newClient.Client.RemoteEndPoint).Address.ToString();
+            info.type = NetType.CONNECT;
+            mQueue.Enqueue(info);
+            mMRE.Set();
 
             Task.Factory.StartNew(waitClient, mClients[idx]);
             return newID;
@@ -163,11 +138,14 @@ namespace IWAS
                 if (nBytes == 0)
                     break;
 
-                clientPack.mem.Write(buff, 0, nBytes);
-                if(pushPacket(ref clientPack))
-                {
-                    mMRE.Set();
-                }
+                clientPack.buf.Push(buff, nBytes);
+
+                QueuePack info = new QueuePack();
+                info.ClientID = clientPack.id;
+                info.buf = clientPack.buf;
+                mQueue.Enqueue(info);
+
+                mMRE.Set();
             }
 
 
@@ -175,51 +153,25 @@ namespace IWAS
             CloseClient(clientPack.id);
         }
 
-        private bool pushPacket(ref ClientBuf client)
-        {
-            long nRecvLen = client.mem.Length;
-            byte[] buf = client.mem.GetBuffer();
-            int headSize = ICD.HEADER.HeaderSize();
-            if (nRecvLen < headSize)
-                return false;
-
-            ICD.HEADER head = ICD.HEADER.GetHeaderInfo(buf);
-            if (head.msgSOF != (uint)ICD.MAGIC.SOF)
-            {
-                client.mem = new MemoryStream(MAX_CLIENT_BUF);
-                return false;
-            }
-
-            uint msgSize = head.msgSize;
-            if (nRecvLen < msgSize)
-                return false;
-
-            QueuePack pack = new QueuePack();
-            pack.ClientID = client.id;
-            pack.size = msgSize;
-            pack.buf = new byte[msgSize];
-            Array.Copy(buf, pack.buf, msgSize);
-            mQueue.Enqueue(pack);
-            client.mem = new MemoryStream(MAX_CLIENT_BUF);
-
-            return true;
-        }
-
         private void CloseClient(int id)
         {
             int idx = id;
             ClientBuf clientPack = mClients[idx];
-            clientPack.mem.Close();
+
+            QueuePack info = new QueuePack();
+            info.ClientID = id;
+            info.buf = null;
+            info.ipAddr = ((IPEndPoint)clientPack.client.Client.RemoteEndPoint).Address.ToString();
+            info.type = NetType.DISCON;
+            mQueue.Enqueue(info);
+            mMRE.Set();
+
             clientPack.client.Close();
-
-            if (clientPack.userName != null)
-                mUserNameMap.Remove(clientPack.userName);
-
             clientPack.id = -1;
             clientPack.client = null;
-            clientPack.mem = null;
-            clientPack.userName = null;
+            clientPack.buf = null;
             mClients[idx] = null;
+
         }
     }
 }

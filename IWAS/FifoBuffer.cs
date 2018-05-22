@@ -8,80 +8,120 @@ namespace IWAS
 {
     class FifoBuffer
     {
-        private List<byte> mi_FifoData = new List<byte>();
+        private object lockObject = new object();
+        private byte[] mArray = null;
+        private int mHead = 0;
+        private int mTail = 0;
+        private int mReserve = 0;
+        private int mSize = 0;
 
-        /// <summary>
-        /// Get the count of bytes in the Fifo buffer
-        /// </summary>
-        public int Count
+        public FifoBuffer(int reserve)
         {
-            get
-            {
-                lock (mi_FifoData)
-                {
-                    return mi_FifoData.Count;
-                }
-            }
+            mReserve = reserve;
+            mArray = new byte[reserve];
         }
 
-        /// <summary>
-        /// Clears the Fifo buffer
-        /// </summary>
         public void Clear()
         {
-            lock (mi_FifoData)
+            lock (lockObject)
             {
-                mi_FifoData.Clear();
+                Array.Clear(mArray, 0, mReserve);
+                mHead = 0;
+                mTail = 0;
+                mSize = 0;
             }
         }
 
-        /// <summary>
-        /// Append data to the end of the fifo
-        /// </summary>
-        public void Push(byte[] buf)
+        public int GetSize()
         {
-            lock (mi_FifoData)
+            lock (lockObject)
             {
-                // Internally the .NET framework uses Array.Copy() which is extremely fast
-                mi_FifoData.AddRange(buf);
+                return mSize;
             }
         }
 
-        /// <summary>
-        /// Get data from the beginning of the fifo.
-        /// returns null if s32_Count bytes are not yet available.
-        /// </summary>
-        public byte[] Pop(int size, bool isKeep = false)
+        public void Push(byte[] buf, int size)
         {
-            lock (mi_FifoData)
+            lock (lockObject)
             {
-                if (mi_FifoData.Count < size)
-                    LOG.warn();
-
-                // Internally the .NET framework uses Array.Copy() which is extremely fast
-                byte[] dest = new byte[size];
-                mi_FifoData.CopyTo(0, dest, 0, size);
-                if(!isKeep)
+                if(size < 0 || size > mReserve-mSize)
                 {
-                    mi_FifoData.RemoveRange(0, size);
+                    LOG.warn();
+                    return;
                 }
-                
+
+                int remainSize = mReserve - mTail;
+                if(remainSize >= size)
+                {
+                    Array.Copy(buf, 0, mArray, mTail, size);
+                    mTail += size;
+                    mSize += size;
+                }
+                else
+                {
+                    Array.Copy(buf, 0, mArray, mTail, remainSize);
+                    Array.Copy(buf, remainSize, mArray, 0, size - remainSize);
+                    mTail = size - remainSize;
+                    mSize += size;
+                }
+            }
+        }
+
+        public byte[] Pop(int size)
+        {
+            lock (lockObject)
+            {
+                if (size < 0 || mSize < size)
+                {
+                    LOG.warn();
+                    return null;
+                }
+                    
+                byte[] dest = new byte[size];
+                int remainSize = mReserve - mHead;
+                if(remainSize >= size)
+                {
+                    Array.Copy(mArray, mHead, dest, 0, size);
+                    mHead += size;
+                    mSize -= size;
+                }
+                else
+                {
+                    Array.Copy(mArray, mHead, dest, 0, remainSize);
+                    Array.Copy(mArray, 0, dest, remainSize, size - remainSize);
+                    mHead = size - remainSize;
+                    mSize -= size;
+                }
+
                 return dest;
             }
         }
 
-        /// <summary>
-        /// Gets a byte without removing it from the Fifo buffer
-        /// returns -1 if the index is invalid
-        /// </summary>
-        public int PeekAt(int idx)
+        public byte[] readSize(int size, int offset = 0)
         {
-            lock (mi_FifoData)
+            lock (lockObject)
             {
-                if (idx < 0 || idx >= mi_FifoData.Count)
-                    return -1;
+                int realSize = offset + size;
+                if (size < 0 || offset < 0 || mSize < realSize)
+                {
+                    LOG.warn();
+                    return null;
+                }
 
-                return mi_FifoData[idx];
+                byte[] dest = new byte[size];
+                int offHead = (mHead + offset) % mReserve;
+                int remainSize = mReserve - offHead;
+                if (remainSize >= size)
+                {
+                    Array.Copy(mArray, offHead, dest, 0, size);
+                }
+                else
+                {
+                    Array.Copy(mArray, offHead, dest, 0, remainSize);
+                    Array.Copy(mArray, 0, dest, remainSize, size - remainSize);
+                }
+
+                return dest;
             }
         }
 
@@ -89,48 +129,27 @@ namespace IWAS
         {
             get
             {
-                lock (mi_FifoData)
-                {
-                    if (index < 0 || index >= Count)
-                        throw new ArgumentOutOfRangeException();
-
-                    return mi_FifoData[index];
-                }
+                byte[] buf = readSize(1, index);
+                if (buf == null)
+                    return 0;
+                return buf[0];
             }
         }
 
         public short readShort(int index)
         {
-            lock (mi_FifoData)
-            {
-                int idxA = index * 2;
-                int idxB = index * 2 + 1;
-                if (index < 0 || idxB >= Count)
-                    throw new ArgumentOutOfRangeException();
-
-                ushort a = mi_FifoData[idxA];
-                ushort b = mi_FifoData[idxB];
-                return (short)(a | (b << 8));
-            }
+            byte[] buf = readSize(2, index * 2);
+            if (buf == null)
+                return 0;
+            return (short)(buf[0] | (buf[1] << 8));
         }
 
         public int readInt(int index)
         {
-            lock (mi_FifoData)
-            {
-                int idxA = index * 2;
-                int idxB = index * 2 + 1;
-                int idxC = index * 2 + 2;
-                int idxD = index * 2 + 3;
-                if (index < 0 || idxD >= Count)
-                    throw new ArgumentOutOfRangeException();
-
-                uint a = mi_FifoData[idxA];
-                uint b = mi_FifoData[idxB];
-                uint c = mi_FifoData[idxC];
-                uint d = mi_FifoData[idxD];
-                return (int)(a | (b<<8) | (c<<16) | (d<<24));
-            }
+            byte[] buf = readSize(4, index * 4);
+            if (buf == null)
+                return 0;
+            return buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
         }
     }
 }

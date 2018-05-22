@@ -77,51 +77,51 @@ namespace IWAS
                 msgUser = MyInfo.mMyInfo.msgUser;
                 msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             }
-            static public void FillHeader(object obj, COMMAND id, TYPE type, string user)
+            public void FillHeader(COMMAND id, TYPE type, string user)
             {
-                HEADER head = obj as HEADER;
-                head.msgID = (uint)id;
-                head.msgSize = (uint)Marshal.SizeOf(obj);
-                head.msgSOF = (uint)MAGIC.SOF;
-                head.msgType = (uint)type;
-                head.msgErr = (uint)ERRORCODE.NOERROR;
-                head.msgUser = user;
-                head.msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                msgID = (uint)id;
+                msgSize = (uint)Marshal.SizeOf(this);
+                msgSOF = (uint)MAGIC.SOF;
+                msgType = (uint)type;
+                msgErr = (uint)ERRORCODE.NOERROR;
+                msgUser = user;
+                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            }
+            public void FillServerHeader(COMMAND id)
+            {
+                msgID = (uint)id;
+                msgSize = (uint)Marshal.SizeOf(this);
+                msgSOF = (uint)MAGIC.SOF;
+                msgType = (uint)TYPE.REP;
+                msgErr = (uint)ERRORCODE.NOERROR;
+                msgUser = ConstDefines.SYSNAME;
+                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             }
             static public int HeaderSize()
             {
                 return Marshal.SizeOf(typeof(HEADER));
             }
-            static public HEADER GetHeaderInfo(byte[] buf)
-            {
-                HEADER obj = new HEADER();
-                int headSize = HeaderSize();
-                byte[] headBuf = new byte[headSize];
-                Array.Copy(buf, headBuf, headSize);
-                Deserialize(obj, ref headBuf);
-                return obj;
-            }
 
-            static public byte[] Serialize(object obj)
+            public byte[] Serialize()
             {
                 // allocate a byte array for the struct data
-                var buffer = new byte[Marshal.SizeOf(obj)];
+                var buffer = new byte[Marshal.SizeOf(this)];
 
                 // Allocate a GCHandle and get the array pointer
                 var gch = GCHandle.Alloc(buffer, GCHandleType.Pinned);
                 var pBuffer = gch.AddrOfPinnedObject();
 
                 // copy data from struct to array and unpin the gc pointer
-                Marshal.StructureToPtr(obj, pBuffer, false);
+                Marshal.StructureToPtr(this, pBuffer, false);
                 gch.Free();
 
                 return buffer;
             }
 
-            static public void Deserialize(Object obj, ref byte[] data)
+            public void Deserialize(ref byte[] data)
             {
                 var gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-                Marshal.PtrToStructure(gch.AddrOfPinnedObject(), obj);
+                Marshal.PtrToStructure(gch.AddrOfPinnedObject(), this);
                 gch.Free();
             }
 

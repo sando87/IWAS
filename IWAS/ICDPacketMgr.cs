@@ -18,6 +18,8 @@ namespace IWAS
         //Event Handler
         public delegate void PacketHandler(int clientID, HEADER obj);
         public event PacketHandler OnRecv;
+        public event PacketHandler OnDisConnected;
+        public event PacketHandler OnConnected;
 
         public void StartServiceServer()
         {
@@ -51,6 +53,7 @@ namespace IWAS
                     return new HEADER();
             }
         }
+
         private void OnRecvPacket(object sender, EventArgs e)
         {
             var queue = (ConcurrentQueue<NetworkMgr.QueuePack>)sender;
@@ -59,10 +62,22 @@ namespace IWAS
                 NetworkMgr.QueuePack pack = null;
                 if (queue.TryDequeue(out pack))
                 {
-                    HEADER head = HEADER.GetHeaderInfo(pack.buf);
-                    HEADER obj = CreateIcdObject((COMMAND)head.msgID);
-                    HEADER.Deserialize(obj, ref pack.buf);
-                    OnRecv.Invoke(pack.ClientID, obj);
+                    switch(pack.type)
+                    {
+                        case NetworkMgr.NetType.CONNECT:
+                            procConnect(pack);
+                            break;
+                        case NetworkMgr.NetType.DISCON:
+                            procDisConnect(pack);
+                            break;
+                        case NetworkMgr.NetType.DATA:
+                            procData(pack);
+                            break;
+                        default:
+                            LOG.warn();
+                            break;
+                    }
+                    
                 }
 
                 if (queue.IsEmpty)
@@ -70,11 +85,54 @@ namespace IWAS
             }
         }
 
+        private void procConnect(NetworkMgr.QueuePack pack)
+        {
+            OnConnected.Invoke(pack.ClientID, null);
+        }
+
+        private void procDisConnect(NetworkMgr.QueuePack pack)
+        {
+            OnDisConnected.Invoke(pack.ClientID, null);
+        }
+
+        private void procData(NetworkMgr.QueuePack pack)
+        {
+            long nRecvLen = pack.buf.GetSize();
+            int headSize = ICD.HEADER.HeaderSize();
+            if (nRecvLen < headSize)
+                return;
+
+            byte[] headBuf = pack.buf.readSize(headSize);
+            HEADER head = new HEADER();
+            head.Deserialize(ref headBuf);
+            if (head.msgSOF != (uint)ICD.MAGIC.SOF)
+            {
+                pack.buf.Clear();
+                return;
+            }
+
+            uint msgSize = head.msgSize;
+            if (nRecvLen < msgSize)
+                return;
+
+            byte[] msgBuf = pack.buf.Pop((int)msgSize);
+            HEADER msg = CreateIcdObject((COMMAND)head.msgID);
+            msg.Deserialize(ref msgBuf);
+            OnRecv.Invoke(pack.ClientID, msg);
+        }
+
         public void sendMsgToServer(ICD.HEADER obj)
         {
-            byte[] buf = ICD.HEADER.Serialize(obj);
-            NetworkMgr.GetInst().WriteToServer(buf);
+            byte[] buf = obj.Serialize();
+            NetworkMgr.GetInst().WriteToClient(0, buf);
         }
+
+        public void sendMsgToClient(int clientID, ICD.HEADER obj)
+        {
+            byte[] buf = obj.Serialize();
+            NetworkMgr.GetInst().WriteToClient(clientID, buf);
+        }
+        
     }
     
 }
