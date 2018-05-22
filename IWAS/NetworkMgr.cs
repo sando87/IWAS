@@ -78,7 +78,7 @@ namespace IWAS
                 Task task = Task.Run(() => { mMRE.WaitOne(); });
                 await task;
                 mMRE.Reset();
-                mRecv.Invoke(mQueue, null);
+                mRecv?.Invoke(mQueue, null);
             }
         }
         public void WriteToClient(int id, byte[] buf)
@@ -143,6 +143,7 @@ namespace IWAS
                 QueuePack info = new QueuePack();
                 info.ClientID = clientPack.id;
                 info.buf = clientPack.buf;
+                info.type = NetType.DATA;
                 mQueue.Enqueue(info);
 
                 mMRE.Set();

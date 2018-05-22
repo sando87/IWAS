@@ -141,7 +141,7 @@ namespace IWAS
         public class Task : HEADER
         {
             [MarshalAs(UnmanagedType.U4)]
-            public uint taskID;
+            public uint recordID;
             [MarshalAs(UnmanagedType.U4)]
             public uint cmdID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
@@ -183,7 +183,7 @@ namespace IWAS
         public class TaskEdit : HEADER
         {
             [MarshalAs(UnmanagedType.U4)]
-            public uint editTaskID;
+            public uint recordID;
             [MarshalAs(UnmanagedType.U4)]
             public uint taskID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]

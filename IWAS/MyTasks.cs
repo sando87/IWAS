@@ -46,7 +46,7 @@ namespace IWAS
         private void AddListView(ICD.Task task)
         {
             string [] infos = new string[2];
-            infos[0] = task.taskID.ToString();
+            infos[0] = task.recordID.ToString();
             infos[1] = task.title;
 
             ListViewItem lvItems = new ListViewItem(infos);
@@ -75,7 +75,7 @@ namespace IWAS
             }
 
             ICD.Task task = obj as ICD.Task;
-            mTasks[task.taskID] = task;
+            mTasks[task.recordID] = task;
             AddListView(task);
         }
 

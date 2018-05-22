@@ -103,7 +103,7 @@ namespace IWAS
         {
             ICD.TaskEdit msg = new ICD.TaskEdit();
             msg.FillClientHeader(ICD.COMMAND.TaskEdit);
-            msg.editTaskID = mTask.taskID;
+            msg.taskID = mTask.recordID;
             msg.info = "";
 
             if (tbTitle.Text != mTask.title)

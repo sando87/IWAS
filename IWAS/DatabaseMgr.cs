@@ -119,7 +119,7 @@ namespace IWAS
         }
         public static DataRow GetTaskRoot(int taskID)
         {
-            string sql = "SELECT * FROM task WHERE id=" + taskID;
+            string sql = "SELECT * FROM task WHERE recordID=" + taskID;
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
@@ -143,8 +143,8 @@ namespace IWAS
         public static void GetTaskLatest(int taskID, ref ICD.Task task)
         {
             DataRow taskRoot = GetTaskRoot(taskID);
-            task.taskID = (uint)taskRoot["id"];
-            task.cmdID = (uint)taskRoot["type"];
+            task.recordID = (uint)taskRoot["recordID"];
+            task.kind = taskRoot["type"].ToString();
             task.createTime = taskRoot["time"].ToString();
             task.creator = taskRoot["creator"].ToString();
             task.access = taskRoot["access"].ToString();

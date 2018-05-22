@@ -30,7 +30,7 @@ namespace IWAS
             InitializeComponent();
         }
 
-        private void InitServer()
+        public void ConnectServer()
         {
 
             ICDPacketMgr.GetInst().OnRecv += OnRecv_ICDMessages;

@@ -20,9 +20,14 @@ namespace IWAS
         public event PacketHandler OnRecv;
         public event PacketHandler OnDisConnected;
         public event PacketHandler OnConnected;
+        private bool isRunServer = false;
 
         public void StartServiceServer()
         {
+            if (isRunServer)
+                return;
+
+            isRunServer = true;
             NetworkMgr networkMgr = NetworkMgr.GetInst();
             networkMgr.mRecv += new EventHandler(OnRecvPacket);
             networkMgr.acceptAsync();
@@ -39,7 +44,12 @@ namespace IWAS
         {
             switch (id)
             {
+                need fix
                 case COMMAND.NewUser:
+                    return new ICD.User();
+                case COMMAND.Login:
+                    return new ICD.User();
+                case COMMAND.Logout:
                     return new ICD.User();
                 case COMMAND.TaskNew:
                     return new ICD.Task();
@@ -50,6 +60,7 @@ namespace IWAS
                 case COMMAND.LogMessage:
                     return new ICD.Message();
                 default:
+                    LOG.warn();
                     return new HEADER();
             }
         }
@@ -87,12 +98,12 @@ namespace IWAS
 
         private void procConnect(NetworkMgr.QueuePack pack)
         {
-            OnConnected.Invoke(pack.ClientID, null);
+            OnConnected?.Invoke(pack.ClientID, null);
         }
 
         private void procDisConnect(NetworkMgr.QueuePack pack)
         {
-            OnDisConnected.Invoke(pack.ClientID, null);
+            OnDisConnected?.Invoke(pack.ClientID, null);
         }
 
         private void procData(NetworkMgr.QueuePack pack)
@@ -118,7 +129,7 @@ namespace IWAS
             byte[] msgBuf = pack.buf.Pop((int)msgSize);
             HEADER msg = CreateIcdObject((COMMAND)head.msgID);
             msg.Deserialize(ref msgBuf);
-            OnRecv.Invoke(pack.ClientID, msg);
+            OnRecv?.Invoke(pack.ClientID, msg);
         }
 
         public void sendMsgToServer(ICD.HEADER obj)
