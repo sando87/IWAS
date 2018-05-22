@@ -87,6 +87,16 @@ namespace IWAS
                 msgUser = user;
                 msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
             }
+            public void FillServerHeader(COMMAND id)
+            {
+                msgID = (uint)id;
+                msgSize = (uint)Marshal.SizeOf(this);
+                msgSOF = (uint)MAGIC.SOF;
+                msgType = (uint)TYPE.REP;
+                msgErr = (uint)ERRORCODE.NOERROR;
+                msgUser = ConstDefines.SYSNAME;
+                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            }
             static public int HeaderSize()
             {
                 return Marshal.SizeOf(typeof(HEADER));

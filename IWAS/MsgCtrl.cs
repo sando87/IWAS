@@ -16,6 +16,8 @@ namespace IWAS
 
         ICDPacketMgr.PacketHandler[] mFuncArray = null;
 
+        private Dictionary<string, int> mUserMap = new Dictionary<string, int>();
+
         public void StartService()
         {
             if (mFuncArray != null)
@@ -25,11 +27,18 @@ namespace IWAS
             mFuncArray[(uint)COMMAND.NewUser] = ICD_NewUser;
             mFuncArray[(uint)COMMAND.Login] = ICD_Login;
             mFuncArray[(uint)COMMAND.Logout] = ICD_Logout;
+            mFuncArray[(uint)COMMAND.TaskNew] = ICD_NewTask;
+            mFuncArray[(uint)COMMAND.TaskEdit] = ICD_EditTask;
+            mFuncArray[(uint)COMMAND.TaskList] = ICD_TaskList;
 
             ICDPacketMgr.GetInst().OnRecv += (id, obj) =>
             {
-                if (mFuncArray != null)
-                    mFuncArray[obj.msgID]?.Invoke(id, obj);
+                mFuncArray[obj.msgID]?.Invoke(id, obj);
+            };
+
+            ICDPacketMgr.GetInst().OnDisConnected += (id, obj) =>
+            {
+                DelUser(id);
             };
         }
 
@@ -39,39 +48,105 @@ namespace IWAS
 
             if (DatabaseMgr.GetUserInfo(msg.userID) != null)
             {
-                //send back error msg : same user id
+                HEADER pack = new HEADER();
+                pack.FillServerHeader(COMMAND.NewUser);
+                pack.msgErr = (uint)ERRORCODE.HaveID;
+                ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
             }
             else
             {
-                //push db new user
-                //ack good
+                DatabaseMgr.NewUser(msg);
+
+                HEADER pack = new HEADER();
+                pack.FillServerHeader(COMMAND.NewUser);
+                ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
             }
         }
+
         private void ICD_Login(int clientID, HEADER obj)
         {
             User msg = obj as User;
             DataRow row = DatabaseMgr.GetUserInfo(msg.userID);
+            HEADER pack = new HEADER();
+            pack.FillServerHeader(COMMAND.Login);
             if (row != null)
             {
-                //if(isOKpassword)
-                {
-                    //loginUser();
-                    //ack good
-                }
-                //else
-                {
-                    //send back error msg : wrong password
-                }
+                if(row["pw"].ToString() == msg.userPW)
+                    AddUser(clientID, msg.userID);
+                else
+                    pack.msgErr = (uint)ERRORCODE.WorngPW;
             }
             else
             {
-                //send back error msg : no user id
+                pack.msgErr = (uint)ERRORCODE.NoID;
             }
 
+            ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
         }
+
         private void ICD_Logout(int clientID, HEADER obj)
         {
+            DelUser(obj.msgUser);
+        }
 
+        private void ICD_NewTask(int clientID, HEADER obj)
+        {
+            ICD.Task msg = obj as ICD.Task;
+            DatabaseMgr.NewTask(msg);
+            sendMsg(msg.director, msg);
+            sendMsg(msg.worker, msg);
+        }
+        private void ICD_EditTask(int clientID, HEADER obj)
+        {
+            TaskEdit msg = obj as TaskEdit;
+            DatabaseMgr.EditTask(msg);
+            int taskID = (int)msg.taskID;
+            ICD.Task task = new ICD.Task();
+            DatabaseMgr.GetTaskLatest(taskID, ref task);
+            sendMsg(obj.msgUser, task);
+        }
+        private void ICD_TaskList(int clientID, HEADER obj)
+        {
+            DataTable table = DatabaseMgr.GetTasks(obj.msgUser);
+            foreach(DataRow row in table.Rows)
+            {
+                ICD.Task task = new ICD.Task();
+                DatabaseMgr.GetTaskLatest((int)row["id"], ref task);
+                sendMsg(obj.msgUser, task);
+            }
+        }
+
+
+        public void sendMsg(string user, HEADER obj)
+        {
+            int id = mUserMap[user];
+            if (id < 0)
+                return;
+
+            ICDPacketMgr.GetInst().sendMsgToClient(id, obj);
+        }
+
+        private void AddUser(int id, string UserName)
+        {
+            mUserMap[UserName] = id;
+        }
+        private void DelUser(string UserName)
+        {
+            if (!mUserMap.ContainsKey(UserName))
+                return;
+
+            mUserMap.Remove(UserName);
+        }
+        private void DelUser(int clientID)
+        {
+            foreach (var item in mUserMap)
+            {
+                if (item.Value == clientID)
+                {
+                    mUserMap.Remove(item.Key);
+                    break;
+                }
+            }
         }
     }
 }

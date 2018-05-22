@@ -35,7 +35,6 @@ namespace IWAS
             public int id { get; set; }
             public TcpClient client { get; set; }
             public FifoBuffer buf { get; set; }
-            public string userName { get; set; }
         }
 
         private const int PORTNUM                   = 7000;
@@ -44,7 +43,6 @@ namespace IWAS
         private const int MAX_CLIENT_BUF            = 1024*1024;
 
 
-        private Dictionary<string, int> mUserNameMap    = new Dictionary<string, int>();
         private ClientBuf[]             mClients        = new ClientBuf[MAX_CLIENT_CNT];
         private ConcurrentQueue<QueuePack>  mQueue      = new ConcurrentQueue<QueuePack>();
         private ManualResetEvent            mMRE        = new ManualResetEvent(false);
@@ -83,15 +81,6 @@ namespace IWAS
                 mRecv.Invoke(mQueue, null);
             }
         }
-        public void WriteToServer(byte[] buf)
-        {
-            int idx = 0;
-            if (mClients[idx] == null)
-                return;
-
-            NetworkStream stream = mClients[idx].client.GetStream();
-            stream.Write(buf, 0, buf.Length);
-        }
         public void WriteToClient(int id, byte[] buf)
         {
             int idx = id;
@@ -100,33 +89,6 @@ namespace IWAS
 
             NetworkStream stream = mClients[idx].client.GetStream();
             stream.Write(buf, 0, buf.Length);
-        }
-        public void WriteToClient(string user, byte[] buf)
-        {
-            if ( !mUserNameMap.ContainsKey(user) )
-                return;
-
-            int id = mUserNameMap[user];
-            NetworkStream stream = mClients[id].client.GetStream();
-            stream.Write(buf, 0, buf.Length);
-        }
-        public void LoginUser(int id, string UserName)
-        {
-            int idx = id;
-            if (mClients[idx] == null)
-                return;
-
-            mClients[idx].userName = UserName;
-            mUserNameMap[UserName] = id;
-        }
-        public void LogoutUser(string UserName)
-        {
-            if (!mUserNameMap.ContainsKey(UserName))
-                return;
-
-            int id = mUserNameMap[UserName];
-            mClients[id].userName = null;
-            mUserNameMap.Remove(UserName);
         }
 
         private int findEmptyID()
@@ -150,7 +112,6 @@ namespace IWAS
             mClients[idx].id = newID;
             mClients[idx].client = newClient;
             mClients[idx].buf = new FifoBuffer(MAX_CLIENT_BUF);
-            mClients[idx].userName = null;
 
             QueuePack info = new QueuePack();
             info.ClientID = newID;
@@ -205,14 +166,10 @@ namespace IWAS
             mQueue.Enqueue(info);
             mMRE.Set();
 
-            if (clientPack.userName != null)
-                mUserNameMap.Remove(clientPack.userName);
-
             clientPack.client.Close();
             clientPack.id = -1;
             clientPack.client = null;
             clientPack.buf = null;
-            clientPack.userName = null;
             mClients[idx] = null;
 
         }

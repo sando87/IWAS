@@ -63,7 +63,7 @@ namespace IWAS
             int ret = cmd.ExecuteNonQuery();
             return ret;
         }
-        public static int NewTask(ICD.Task info)
+        public static DataRow NewTask(ICD.Task info)
         {
             string sql = string.Format(
                 "INSERT INTO task " +
@@ -80,7 +80,15 @@ namespace IWAS
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
             int ret = cmd.ExecuteNonQuery();
-            return ret;
+
+            sql = string.Format("SELECT * FROM task WHERE time={0} AND creator={1}", info.msgTime, info.creator);
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if (adapter.Fill(ds, "TASK") == 0)
+                return null;
+
+            return ds.Tables["TASK"].Rows[0];
         }
         public static int EditTask(ICD.TaskEdit info)
         {
@@ -156,6 +164,12 @@ namespace IWAS
                     {
                         case "title":
                             task.title = data[1];
+                            break;
+                        case "comment":
+                            task.comment = data[1];
+                            break;
+                        case "launch":
+                            task.preLaunch = data[1];
                             break;
                         case "access":
                             task.access = data[1];
