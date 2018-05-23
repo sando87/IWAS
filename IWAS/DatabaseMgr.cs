@@ -26,9 +26,11 @@ namespace IWAS
         static private MySqlConnection mConn = null;
         public static void Open()
         {
-            string strConn = "Server=localhost;Database=test;Uid=root;Pwd=root;";
+            string strConn = "Server=localhost;Database=test;Uid=root;Pwd=root;SslMode=none;";
             mConn = new MySqlConnection(strConn);
-            mConn.Open();
+
+            try { mConn.Open(); }
+            catch (Exception e) { LOG.echo(e.ToString()); }
         }
         public static void Close()
         {
@@ -45,14 +47,29 @@ namespace IWAS
             if (ret != 1)
                 return null;
 
+            //try { adapter.Fill(ds, "USER"); }
+            //catch (Exception e) { LOG.echo(e.ToString()); return null; }
+
             return ds.Tables["USER"].Rows[0];
+        }
+        public static DataTable GetUsers()
+        {
+            string sql = "SELECT * FROM user";
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            int ret = adapter.Fill(ds, "USERS");
+            if (ret == 0)
+                return null;
+
+            return ds.Tables["USERS"];
         }
         public static int NewUser(ICD.User info)
         {
             string sql = string.Format(
                 "INSERT INTO user " +       //user DataBase
                 "(id, pw, date, auth) " +   //Column name
-                "VALUES ('{0}', '{1}', '{2}', {3}",     //values list
+                "VALUES ('{0}', '{1}', '{2}', {3})",     //values list
                 info.userID,
                 info.userPW,
                 info.msgTime,
@@ -79,14 +96,13 @@ namespace IWAS
                 0);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
-            int ret = cmd.ExecuteNonQuery();
+            cmd.ExecuteNonQuery();
 
             sql = string.Format("SELECT * FROM task WHERE time={0} AND creator={1}", info.msgTime, info.creator);
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
-            if (adapter.Fill(ds, "TASK") == 0)
-                return null;
+            adapter.Fill(ds, "TASK");
 
             return ds.Tables["TASK"].Rows[0];
         }
@@ -143,6 +159,9 @@ namespace IWAS
         public static void GetTaskLatest(int taskID, ref ICD.Task task)
         {
             DataRow taskRoot = GetTaskRoot(taskID);
+            if (taskRoot == null)
+                return;
+
             task.recordID = (uint)taskRoot["recordID"];
             task.kind = taskRoot["type"].ToString();
             task.createTime = taskRoot["time"].ToString();
@@ -153,6 +172,9 @@ namespace IWAS
             task.worker = taskRoot["woker"].ToString();
 
             DataTable taskHis = GetTaskHistory(taskID);
+            if (taskHis == null)
+                return;
+
             foreach(DataRow item in taskHis.Rows)
             {
                 string value = item["info"].ToString();

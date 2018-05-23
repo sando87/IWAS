@@ -17,8 +17,22 @@ namespace IWAS
         public MyTasks()
         {
             InitializeComponent();
+        }
+
+        private void MyTasks_Load(object sender, EventArgs e)
+        {
             ICDPacketMgr.GetInst().OnRecv += OnRecv_ICDMessages;
+            this.FormClosed += delegate{
+                ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
+            };
+            
+
             InitListView();
+
+            //ICD.HEADER msg = new ICD.HEADER();
+            //msg.FillClientHeader(ICD.COMMAND.TaskList);
+            //ICDPacketMgr.GetInst().sendMsgToServer(msg);
+
         }
 
         private void InitListView()

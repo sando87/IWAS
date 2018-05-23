@@ -60,6 +60,7 @@
             this.Controls.Add(this.NewTask);
             this.Name = "MyTasks";
             this.Text = "Tasks";
+            this.Load += new System.EventHandler(this.MyTasks_Load);
             this.ResumeLayout(false);
 
         }

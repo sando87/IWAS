@@ -23,10 +23,16 @@ namespace IWAS
             Login form = new Login();
             form.ConnectServer();
             form.ShowDialog();
+
+            Dispose();
+            //Relese All
+            //Close databases
+            //Close Network Socket
         }
 
         private void btnServer_Click(object sender, EventArgs e)
         {
+            DatabaseMgr.Open();
             MsgCtrl.GetInst().StartService();
         }
     }

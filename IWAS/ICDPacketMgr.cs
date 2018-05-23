@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using IWAS.ICD;
 using System.Collections.Concurrent;
+using System.Runtime.InteropServices;
 
 namespace IWAS
 {
@@ -40,28 +41,40 @@ namespace IWAS
             networkMgr.connectServer(ip, port);
             networkMgr.startAsync();
         }
-        private HEADER CreateIcdObject(COMMAND id)
+        private HEADER CreateIcdObject(int msgSize)
         {
-            switch (id)
+            if (msgSize == Marshal.SizeOf(typeof(HEADER)))
             {
-                need fix
-                case COMMAND.NewUser:
-                    return new ICD.User();
-                case COMMAND.Login:
-                    return new ICD.User();
-                case COMMAND.Logout:
-                    return new ICD.User();
-                case COMMAND.TaskNew:
-                    return new ICD.Task();
-                case COMMAND.NewChat:
-                    return new ICD.Chat();
-                case COMMAND.UploadFile:
-                    return new ICD.File();
-                case COMMAND.LogMessage:
-                    return new ICD.Message();
-                default:
-                    LOG.warn();
-                    return new HEADER();
+                return new HEADER();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(User)))
+            {
+                return new User();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(ICD.Task)))
+            {
+                return new ICD.Task();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(TaskEdit)))
+            {
+                return new TaskEdit();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(Chat)))
+            {
+                return new Chat();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(File)))
+            {
+                return new File();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(Message)))
+            {
+                return new Message();
+            }
+            else
+            {
+                LOG.warn();
+                return new HEADER();
             }
         }
 
@@ -127,7 +140,7 @@ namespace IWAS
                 return;
 
             byte[] msgBuf = pack.buf.Pop((int)msgSize);
-            HEADER msg = CreateIcdObject((COMMAND)head.msgID);
+            HEADER msg = CreateIcdObject((int)head.msgSize);
             msg.Deserialize(ref msgBuf);
             OnRecv?.Invoke(pack.ClientID, msg);
         }

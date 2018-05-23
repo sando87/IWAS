@@ -28,58 +28,58 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
+            this.btnLogin = new System.Windows.Forms.Button();
+            this.cbNewUser = new System.Windows.Forms.CheckBox();
+            this.edPassword = new System.Windows.Forms.TextBox();
+            this.edUserID = new System.Windows.Forms.TextBox();
+            this.edPasswordCheck = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // button1
+            // btnLogin
             // 
-            this.button1.Location = new System.Drawing.Point(140, 109);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "로그인";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnLogin.Location = new System.Drawing.Point(140, 109);
+            this.btnLogin.Name = "btnLogin";
+            this.btnLogin.Size = new System.Drawing.Size(75, 23);
+            this.btnLogin.TabIndex = 0;
+            this.btnLogin.Text = "로그인";
+            this.btnLogin.UseVisualStyleBackColor = true;
+            this.btnLogin.Click += new System.EventHandler(this.button1_Click);
             // 
-            // checkBox1
+            // cbNewUser
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(48, 116);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(72, 16);
-            this.checkBox1.TabIndex = 1;
-            this.checkBox1.Text = "회원가입";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.cbNewUser.AutoSize = true;
+            this.cbNewUser.Location = new System.Drawing.Point(48, 116);
+            this.cbNewUser.Name = "cbNewUser";
+            this.cbNewUser.Size = new System.Drawing.Size(72, 16);
+            this.cbNewUser.TabIndex = 1;
+            this.cbNewUser.Text = "회원가입";
+            this.cbNewUser.UseVisualStyleBackColor = true;
+            this.cbNewUser.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
             // 
-            // textBox1
+            // edPassword
             // 
-            this.textBox1.Location = new System.Drawing.Point(115, 55);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(100, 21);
-            this.textBox1.TabIndex = 2;
+            this.edPassword.Location = new System.Drawing.Point(115, 55);
+            this.edPassword.Name = "edPassword";
+            this.edPassword.Size = new System.Drawing.Size(100, 21);
+            this.edPassword.TabIndex = 2;
             // 
-            // textBox2
+            // edUserID
             // 
-            this.textBox2.Location = new System.Drawing.Point(115, 28);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(100, 21);
-            this.textBox2.TabIndex = 2;
+            this.edUserID.Location = new System.Drawing.Point(115, 28);
+            this.edUserID.Name = "edUserID";
+            this.edUserID.Size = new System.Drawing.Size(100, 21);
+            this.edUserID.TabIndex = 2;
             // 
-            // textBox3
+            // edPasswordCheck
             // 
-            this.textBox3.Enabled = false;
-            this.textBox3.Location = new System.Drawing.Point(115, 82);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 21);
-            this.textBox3.TabIndex = 2;
+            this.edPasswordCheck.Enabled = false;
+            this.edPasswordCheck.Location = new System.Drawing.Point(115, 82);
+            this.edPasswordCheck.Name = "edPasswordCheck";
+            this.edPasswordCheck.Size = new System.Drawing.Size(100, 21);
+            this.edPasswordCheck.TabIndex = 2;
             // 
             // label1
             // 
@@ -116,11 +116,11 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.textBox3);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.checkBox1);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.edPasswordCheck);
+            this.Controls.Add(this.edUserID);
+            this.Controls.Add(this.edPassword);
+            this.Controls.Add(this.cbNewUser);
+            this.Controls.Add(this.btnLogin);
             this.Name = "Login";
             this.Text = "Form1";
             this.ResumeLayout(false);
@@ -130,11 +130,11 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox3;
+        private System.Windows.Forms.Button btnLogin;
+        private System.Windows.Forms.CheckBox cbNewUser;
+        private System.Windows.Forms.TextBox edPassword;
+        private System.Windows.Forms.TextBox edUserID;
+        private System.Windows.Forms.TextBox edPasswordCheck;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;

@@ -25,6 +25,7 @@ namespace IWAS
 
             mFuncArray = new ICDPacketMgr.PacketHandler[(uint)COMMAND.MAX_COUNT];
             mFuncArray[(uint)COMMAND.NewUser] = ICD_NewUser;
+            mFuncArray[(uint)COMMAND.UserList] = ICD_UserList;
             mFuncArray[(uint)COMMAND.Login] = ICD_Login;
             mFuncArray[(uint)COMMAND.Logout] = ICD_Logout;
             mFuncArray[(uint)COMMAND.TaskNew] = ICD_NewTask;
@@ -65,16 +66,37 @@ namespace IWAS
             }
         }
 
+        private void ICD_UserList(int clientID, HEADER obj)
+        {
+            DataTable table = DatabaseMgr.GetUsers();
+            if (table == null)
+                return;
+
+            Message pack = new Message();
+            pack.FillServerHeader(COMMAND.UserList);
+            foreach(DataRow user in table.Rows)
+            {
+                pack.message += user["id"].ToString();
+                pack.message += ",";
+            }
+
+            ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
+        }
+
         private void ICD_Login(int clientID, HEADER obj)
         {
             User msg = obj as User;
             DataRow row = DatabaseMgr.GetUserInfo(msg.userID);
-            HEADER pack = new HEADER();
+            User pack = new User();
             pack.FillServerHeader(COMMAND.Login);
             if (row != null)
             {
-                if(row["pw"].ToString() == msg.userPW)
+                if (row["pw"].ToString() == msg.userPW)
+                {
                     AddUser(clientID, msg.userID);
+                    pack.userID = row["id"].ToString();
+                    pack.userPW = row["pw"].ToString();
+                }
                 else
                     pack.msgErr = (uint)ERRORCODE.WorngPW;
             }
@@ -121,6 +143,9 @@ namespace IWAS
         private void ICD_TaskList(int clientID, HEADER obj)
         {
             DataTable table = DatabaseMgr.GetTasks(obj.msgUser);
+            if (table == null)
+                return;
+
             foreach(DataRow row in table.Rows)
             {
                 ICD.Task task = new ICD.Task();

@@ -81,12 +81,12 @@ namespace IWAS
                     {
                         MyInfo.mMyInfo = obj as ICD.User;
                         ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
-                        this.Visible = false;
+                        Visible = false;
+
                         MyTasks task = new MyTasks();
                         task.ShowDialog();
-                        ICD.HEADER msg = new ICD.HEADER();
-                        msg.FillClientHeader(ICD.COMMAND.TaskList);
-                        ICDPacketMgr.GetInst().sendMsgToServer(msg);
+                        Visible = true;
+
                     }
                     break;
                 case ICD.ERRORCODE.NoID:
@@ -102,31 +102,30 @@ namespace IWAS
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
-            LOG.warn();
-            if (checkBox1.Checked)
+            if (cbNewUser.Checked)
             {
-                button1.Text = BTN_NEWUSER;
-                textBox3.Enabled = true;
+                btnLogin.Text = BTN_NEWUSER;
+                edPasswordCheck.Enabled = true;
             }
             else
             {
-                button1.Text = BTN_LOGIN;
-                textBox3.Enabled = false;
+                btnLogin.Text = BTN_LOGIN;
+                edPasswordCheck.Enabled = false;
             }
 
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (checkBox1.Checked)
+            if (cbNewUser.Checked)
             {
                 //회원가입 요청
-                if (textBox2.Text == textBox3.Text)
+                if (edPassword.Text == edPasswordCheck.Text)
                 {
                     ICD.User obj = new ICD.User();
                     obj.FillClientHeader(ICD.COMMAND.NewUser);
-                    obj.userID = textBox1.Text;
-                    obj.userPW = textBox2.Text;
+                    obj.userID = edUserID.Text;
+                    obj.userPW = edPassword.Text;
                     ICDPacketMgr.GetInst().sendMsgToServer(obj);
                 }
                 else
@@ -140,8 +139,8 @@ namespace IWAS
                 //로그인 요청
                 ICD.User obj = new ICD.User();
                 obj.FillClientHeader(ICD.COMMAND.Login);
-                obj.userID = textBox1.Text;
-                obj.userPW = textBox2.Text;
+                obj.userID = edUserID.Text;
+                obj.userPW = edPassword.Text;
                 ICDPacketMgr.GetInst().sendMsgToServer(obj);
             }
 

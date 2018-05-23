@@ -74,8 +74,8 @@ namespace IWAS
                 msgSOF = (uint)MAGIC.SOF;
                 msgType = (uint)TYPE.REQ;
                 msgErr = (uint)ERRORCODE.NOERROR;
-                msgUser = MyInfo.mMyInfo.msgUser;
-                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                msgUser = MyInfo.mMyInfo.userID;
+                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
             public void FillHeader(COMMAND id, TYPE type, string user)
             {
@@ -85,7 +85,7 @@ namespace IWAS
                 msgType = (uint)type;
                 msgErr = (uint)ERRORCODE.NOERROR;
                 msgUser = user;
-                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
             public void FillServerHeader(COMMAND id)
             {
@@ -95,7 +95,7 @@ namespace IWAS
                 msgType = (uint)TYPE.REP;
                 msgErr = (uint)ERRORCODE.NOERROR;
                 msgUser = ConstDefines.SYSNAME;
-                msgTime = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
             static public int HeaderSize()
             {
@@ -238,7 +238,7 @@ namespace IWAS
             public string ext;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string user;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 1024*4)]
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1024)]
             public byte[] data;
 
         }

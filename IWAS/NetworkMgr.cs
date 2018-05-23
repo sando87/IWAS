@@ -33,6 +33,7 @@ namespace IWAS
         private class ClientBuf
         {
             public int id { get; set; }
+            public string address { get; set; }
             public TcpClient client { get; set; }
             public FifoBuffer buf { get; set; }
         }
@@ -111,12 +112,13 @@ namespace IWAS
             mClients[idx] = new ClientBuf();
             mClients[idx].id = newID;
             mClients[idx].client = newClient;
+            mClients[idx].address = ((IPEndPoint)newClient.Client.RemoteEndPoint).Address.ToString();
             mClients[idx].buf = new FifoBuffer(MAX_CLIENT_BUF);
 
             QueuePack info = new QueuePack();
             info.ClientID = newID;
             info.buf = null;
-            info.ipAddr = ((IPEndPoint)newClient.Client.RemoteEndPoint).Address.ToString();
+            info.ipAddr = mClients[idx].address;
             info.type = NetType.CONNECT;
             mQueue.Enqueue(info);
             mMRE.Set();
@@ -134,9 +136,13 @@ namespace IWAS
             byte[] buff = new byte[MAX_SOCKET_BUF];
             while(true)
             {
-                int nBytes = stream.Read(buff, 0, buff.Length);
-                if (nBytes == 0)
-                    break;
+                int nBytes = 0;
+                try { 
+                    nBytes = stream.Read(buff, 0, buff.Length);
+                    if (nBytes == 0)
+                        break;
+                }
+                catch(Exception e) { LOG.echo(e.ToString()); break; }
 
                 clientPack.buf.Push(buff, nBytes);
 
@@ -144,11 +150,11 @@ namespace IWAS
                 info.ClientID = clientPack.id;
                 info.buf = clientPack.buf;
                 info.type = NetType.DATA;
+                info.ipAddr = clientPack.address;
                 mQueue.Enqueue(info);
 
                 mMRE.Set();
             }
-
 
             stream.Close();
             CloseClient(clientPack.id);
@@ -162,7 +168,7 @@ namespace IWAS
             QueuePack info = new QueuePack();
             info.ClientID = id;
             info.buf = null;
-            info.ipAddr = ((IPEndPoint)clientPack.client.Client.RemoteEndPoint).Address.ToString();
+            info.ipAddr = clientPack.address;
             info.type = NetType.DISCON;
             mQueue.Enqueue(info);
             mMRE.Set();
@@ -171,6 +177,7 @@ namespace IWAS
             clientPack.id = -1;
             clientPack.client = null;
             clientPack.buf = null;
+            clientPack.address = "";
             mClients[idx] = null;
 
         }
