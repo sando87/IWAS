@@ -22,9 +22,9 @@ namespace IWAS
             Visible = false;
             Login form = new Login();
             form.ConnectServer();
-            form.ShowDialog();
+            form.Show();
 
-            Dispose();
+            //Dispose();
             //Relese All
             //Close databases
             //Close Network Socket

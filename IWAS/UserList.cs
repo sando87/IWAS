@@ -28,12 +28,15 @@ namespace IWAS
                 ICD.Message msg = (ICD.Message)obj;
                 string[] infos = msg.message.Split(',');
 
-                lvUserlist.Clear();
+                lvUserlist.Items.Clear();
                 mUserList.Clear();
                 foreach (string info in infos)
                 {
-                    mUserList.Add(info);
-                    lvUserlist.Items.Add(info);
+                    if(info.Length>0)
+                    {
+                        mUserList.Add(info);
+                        lvUserlist.Items.Add(info);
+                    }
                 }
             }
         }
@@ -57,7 +60,7 @@ namespace IWAS
         {
             if (lvUserlist.SelectedItems.Count == 1)
             {
-                mSelectedUser = lvUserlist.SelectedItems[0].ToString();
+                mSelectedUser = lvUserlist.SelectedItems[0].Text;
                 ICDPacketMgr.GetInst().OnRecv -= OnRecvUserList;
                 Close();
             }

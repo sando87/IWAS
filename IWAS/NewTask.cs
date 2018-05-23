@@ -33,6 +33,7 @@ namespace IWAS
             msgTask.preterm = tbTerm.Text;
             msgTask.priority = cbPriority.Text;
             //user listing
+            msgTask.creator = MyInfo.mMyInfo.userID;
             msgTask.director = btnDirector.Text;
             msgTask.worker = btnWorker.Text;
             msgTask.title = tbTitle.Text;

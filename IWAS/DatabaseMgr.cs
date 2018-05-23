@@ -93,12 +93,12 @@ namespace IWAS
                 info.title,
                 info.director,
                 info.worker,
-                0);
+                -1);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
             cmd.ExecuteNonQuery();
 
-            sql = string.Format("SELECT * FROM task WHERE time={0} AND creator={1}", info.msgTime, info.creator);
+            sql = string.Format("SELECT * FROM task WHERE time='{0}' AND creator='{1}'", info.msgTime, info.creator);
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
@@ -162,14 +162,15 @@ namespace IWAS
             if (taskRoot == null)
                 return;
 
-            task.recordID = (uint)taskRoot["recordID"];
+            int id = (int)taskRoot["recordID"];
+            task.recordID = (uint)id;
             task.kind = taskRoot["type"].ToString();
             task.createTime = taskRoot["time"].ToString();
             task.creator = taskRoot["creator"].ToString();
             task.access = taskRoot["access"].ToString();
             task.title = taskRoot["title"].ToString();
             task.director = taskRoot["director"].ToString();
-            task.worker = taskRoot["woker"].ToString();
+            task.worker = taskRoot["worker"].ToString();
 
             DataTable taskHis = GetTaskHistory(taskID);
             if (taskHis == null)
@@ -199,7 +200,7 @@ namespace IWAS
                         case "director":
                             task.director = data[1];
                             break;
-                        case "woker":
+                        case "worker":
                             task.worker = data[1];
                             break;
                         case "progress":

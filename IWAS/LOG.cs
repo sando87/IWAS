@@ -32,7 +32,14 @@ namespace IWAS
             [CallerMemberName] string caller = null,
             [CallerLineNumber] int lineNumber = 0)
         {
-            MessageBox.Show("Warn!! [" + caller + "][" + lineNumber + "]");
+            var st = new StackTrace();
+            string msg = "";
+            foreach(var frame in st.GetFrames())
+            {
+                msg += frame.GetMethod().ToString();
+                msg += "\n";
+            }
+            MessageBox.Show("Warn!!\n" + msg);
         }
 
         //에러 메세지를 띄어주고 프로그램을 종료시킨다.(치명적 케이스인 경우 사용)

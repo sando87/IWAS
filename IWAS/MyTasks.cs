@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -24,14 +25,19 @@ namespace IWAS
             ICDPacketMgr.GetInst().OnRecv += OnRecv_ICDMessages;
             this.FormClosed += delegate{
                 ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
+                Dispose();
+                //Relese All
+                //Close databases
+                //Close Network Socket
+                Process.GetCurrentProcess().Kill();
             };
             
 
             InitListView();
 
-            //ICD.HEADER msg = new ICD.HEADER();
-            //msg.FillClientHeader(ICD.COMMAND.TaskList);
-            //ICDPacketMgr.GetInst().sendMsgToServer(msg);
+            ICD.HEADER msg = new ICD.HEADER();
+            msg.FillClientHeader(ICD.COMMAND.TaskList);
+            ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
         }
 
@@ -50,7 +56,7 @@ namespace IWAS
         }
         private void UpdateListView()
         {
-            TaskList.Clear();
+            TaskList.Items.Clear();
 
             foreach (KeyValuePair<uint, ICD.Task> task in mTasks)
             {

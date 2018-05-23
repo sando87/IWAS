@@ -77,16 +77,19 @@ namespace IWAS
             switch (curErr)
             {
                 case ICD.ERRORCODE.NOERROR:
-                    MessageBox.Show(MSG_SUCCESS_LOGIN);
                     {
+                        MessageBox.Show(MSG_SUCCESS_LOGIN);
                         MyInfo.mMyInfo = obj as ICD.User;
+
                         ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
                         Visible = false;
 
                         MyTasks task = new MyTasks();
-                        task.ShowDialog();
-                        Visible = true;
-
+                        task.Show();
+                        task.FormClosed += delegate {
+                            Visible = true;
+                            ICDPacketMgr.GetInst().OnRecv += OnRecv_ICDMessages;
+                        };
                     }
                     break;
                 case ICD.ERRORCODE.NoID:
