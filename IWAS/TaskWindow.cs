@@ -45,7 +45,7 @@ namespace IWAS
 
         private void OnRecvEditTask(int clientID, ICD.HEADER obj)
         {
-            if (ICD.COMMAND.TaskInfo == (ICD.COMMAND)obj.msgID)
+            if (ICD.DEF.CMD_TaskInfo == obj.msgID)
             {
                 ICD.Task msg = (ICD.Task)obj;
                 mTask = msg;
@@ -102,7 +102,7 @@ namespace IWAS
         private void sendEditInfo()
         {
             ICD.TaskEdit msg = new ICD.TaskEdit();
-            msg.FillClientHeader(ICD.COMMAND.TaskEdit);
+            msg.FillClientHeader(ICD.DEF.CMD_TaskEdit);
             msg.taskID = mTask.recordID;
             msg.info = "";
 

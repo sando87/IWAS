@@ -43,12 +43,12 @@ namespace IWAS
         private void OnRecv_ICDMessages(int clientID, ICD.HEADER o)
         {
             ICD.HEADER obj = o as ICD.HEADER;
-            switch ((ICD.COMMAND)obj.msgID)
+            switch (obj.msgID)
             {
-                case ICD.COMMAND.NewUser:
+                case ICD.DEF.CMD_NewUser:
                     OnRecv_NewUser(obj);
                     break;
-                case ICD.COMMAND.Login:
+                case ICD.DEF.CMD_Login:
                     OnRecv_Login(obj);
                     break;
                 default:
@@ -58,13 +58,12 @@ namespace IWAS
 
         private void OnRecv_NewUser(ICD.HEADER obj)
         {
-            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.msgErr;
-            switch (curErr)
+            switch (obj.msgErr)
             {
-                case ICD.ERRORCODE.NOERROR:
+                case ICD.DEF.ERR_NoError:
                     MessageBox.Show(MSG_SUCCESS_NEWID);
                     break;
-                case ICD.ERRORCODE.HaveID:
+                case ICD.DEF.ERR_HaveID:
                     MessageBox.Show(MSG_ALREADY_ID);
                     break;
                 default:
@@ -73,10 +72,9 @@ namespace IWAS
         }
         private void OnRecv_Login(ICD.HEADER obj)
         {
-            ICD.ERRORCODE curErr = (ICD.ERRORCODE)obj.msgErr;
-            switch (curErr)
+            switch (obj.msgErr)
             {
-                case ICD.ERRORCODE.NOERROR:
+                case ICD.DEF.ERR_NoError:
                     {
                         MessageBox.Show(MSG_SUCCESS_LOGIN);
                         MyInfo.mMyInfo = obj as ICD.User;
@@ -92,10 +90,10 @@ namespace IWAS
                         };
                     }
                     break;
-                case ICD.ERRORCODE.NoID:
+                case ICD.DEF.ERR_NoID:
                     MessageBox.Show(MSG_UNREGIST_ID);
                     break;
-                case ICD.ERRORCODE.WorngPW:
+                case ICD.DEF.ERR_WorngPW:
                     MessageBox.Show(MSG_WRONG_PW);
                     break;
                 default:
@@ -126,7 +124,7 @@ namespace IWAS
                 if (edPassword.Text == edPasswordCheck.Text)
                 {
                     ICD.User obj = new ICD.User();
-                    obj.FillClientHeader(ICD.COMMAND.NewUser);
+                    obj.FillClientHeader(ICD.DEF.CMD_NewUser);
                     obj.userID = edUserID.Text;
                     obj.userPW = edPassword.Text;
                     ICDPacketMgr.GetInst().sendMsgToServer(obj);
@@ -141,7 +139,7 @@ namespace IWAS
             {
                 //로그인 요청
                 ICD.User obj = new ICD.User();
-                obj.FillClientHeader(ICD.COMMAND.Login);
+                obj.FillClientHeader(ICD.DEF.CMD_Login);
                 obj.userID = edUserID.Text;
                 obj.userPW = edPassword.Text;
                 ICDPacketMgr.GetInst().sendMsgToServer(obj);

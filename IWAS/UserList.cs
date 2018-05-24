@@ -23,7 +23,7 @@ namespace IWAS
 
         private void OnRecvUserList(int clientID, ICD.HEADER obj)
         {
-            if (ICD.COMMAND.UserList == (ICD.COMMAND)obj.msgID)
+            if (ICD.DEF.CMD_UserList == obj.msgID)
             {
                 ICD.Message msg = (ICD.Message)obj;
                 string[] infos = msg.message.Split(',');
@@ -69,7 +69,7 @@ namespace IWAS
         private void btnUpdate_Click(object sender, EventArgs e)
         {
             ICD.HEADER msg = new ICD.HEADER();
-            msg.FillClientHeader(ICD.COMMAND.UserList);
+            msg.FillClientHeader(ICD.DEF.CMD_UserList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
     }

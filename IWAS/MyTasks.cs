@@ -13,7 +13,7 @@ namespace IWAS
 {
     public partial class MyTasks : Form
     {
-        static public Dictionary<uint, ICD.Task> mTasks = new Dictionary<uint, ICD.Task>();
+        static public Dictionary<int, ICD.Task> mTasks = new Dictionary<int, ICD.Task>();
 
         public MyTasks()
         {
@@ -23,7 +23,7 @@ namespace IWAS
         private void MyTasks_Load(object sender, EventArgs e)
         {
             ICDPacketMgr.GetInst().OnRecv += OnRecv_ICDMessages;
-            this.FormClosed += delegate{
+            FormClosed += delegate{
                 ICDPacketMgr.GetInst().OnRecv -= OnRecv_ICDMessages;
                 Dispose();
                 //Relese All
@@ -36,7 +36,7 @@ namespace IWAS
             InitListView();
 
             ICD.HEADER msg = new ICD.HEADER();
-            msg.FillClientHeader(ICD.COMMAND.TaskList);
+            msg.FillClientHeader(ICD.DEF.CMD_TaskList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
         }
@@ -58,7 +58,7 @@ namespace IWAS
         {
             TaskList.Items.Clear();
 
-            foreach (KeyValuePair<uint, ICD.Task> task in mTasks)
+            foreach (KeyValuePair<int, ICD.Task> task in mTasks)
             {
                 AddListView(task.Value);
             }
@@ -76,9 +76,9 @@ namespace IWAS
         private void OnRecv_ICDMessages(int clientID, ICD.HEADER o)
         {
             ICD.HEADER obj = o as ICD.HEADER;
-            switch ((ICD.COMMAND)obj.msgID)
+            switch (obj.msgID)
             {
-                case ICD.COMMAND.TaskInfo:
+                case ICD.DEF.CMD_TaskInfo:
                     OnRecv_TaskInfo(obj);
                     break;
                 default:
@@ -88,7 +88,7 @@ namespace IWAS
 
         private void OnRecv_TaskInfo(ICD.HEADER obj)
         {
-            if(ICD.ERRORCODE.NOERROR != (ICD.ERRORCODE)obj.msgErr)
+            if(ICD.DEF.ERR_NoError != obj.msgErr)
             {
                 LOG.warn();
                 return;
@@ -112,7 +112,7 @@ namespace IWAS
                 var items = TaskList.SelectedItems;
                 ListViewItem lvItem = items[0];
                 string strID = lvItem.SubItems[0].Text;
-                uint taskID = uint.Parse(strID);
+                int taskID = int.Parse(strID);
                 ICD.Task objTask = mTasks[taskID];
                 TaskWindow window = new TaskWindow(objTask);
                 window.ShowDialog();

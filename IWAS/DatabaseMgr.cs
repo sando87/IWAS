@@ -162,8 +162,7 @@ namespace IWAS
             if (taskRoot == null)
                 return;
 
-            int id = (int)taskRoot["recordID"];
-            task.recordID = (uint)id;
+            task.recordID = (int)taskRoot["recordID"];
             task.kind = taskRoot["type"].ToString();
             task.createTime = taskRoot["time"].ToString();
             task.creator = taskRoot["creator"].ToString();
@@ -204,7 +203,7 @@ namespace IWAS
                             task.worker = data[1];
                             break;
                         case "progress":
-                            task.progress = uint.Parse(data[1]);
+                            task.progress = int.Parse(data[1]);
                             break;
                         default:
                             LOG.warn();

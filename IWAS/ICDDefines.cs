@@ -9,91 +9,80 @@ namespace IWAS
 {
     namespace ICD
     {
-        public enum COMMAND
+        public class DEF
         {
-            NONE,
-            NewUser,
-            UserList,
-            Login,
-            Logout,
-            TaskNew,
-            TaskEdit,
-            TaskDelete,
-            TaskList,
-            TaskInfo,
-            NewChat,
-            AddChat,
-            UploadFile,
-            DownloadFile,
-            LogMessage,
-            Search,
-            MAX_COUNT,
-        }
-        public enum TYPE
-        {
-            REQ,
-            ACK,
-            REP,
-            ALT,
-        }
-        public enum MAGIC
-        {
-            SOF = 0xaa,
-            EOF = 0xbb
-        }
-        public enum ERRORCODE
-        {
-            NOERROR,
-            HaveID,
-            NoID,
-            WorngPW,
+            public const int CMD_NONE           = 0;
+            public const int CMD_NewUser        = 1;
+            public const int CMD_UserList       = 2;
+            public const int CMD_Login          = 3;
+            public const int CMD_Logout         = 4;
+            public const int CMD_TaskNew        = 5;
+            public const int CMD_TaskEdit       = 6;
+            public const int CMD_TaskDelete     = 7;
+            public const int CMD_TaskList       = 8;
+            public const int CMD_TaskInfo       = 9;
+            public const int CMD_NewChat        = 10;
+            public const int CMD_AddChat        = 11;
+            public const int CMD_UploadFile     = 12;
+            public const int CMD_DownloadFile   = 13;
+            public const int CMD_LogMessage     = 14;
+            public const int CMD_Search         = 15;
+            public const int CMD_MAX_COUNT      = 16;
+
+            public const int TYPE_REQ = 1;
+            public const int TYPE_ACK = 2;
+            public const int TYPE_REP = 3;
+            public const int TYPE_ALT = 4;
+
+            public const int MAGIC_SOF = 0xaa;
+            public const int MAGIC_EOF = 0xbb;
+
+            public const int ERR_NoError    = 0;
+            public const int ERR_HaveID     = 1;
+            public const int ERR_NoID       = 2;
+            public const int ERR_WorngPW    = 3;
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class HEADER
         {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint msgSOF;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint msgID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint msgSize;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint msgType;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint msgErr;
+            [MarshalAs(UnmanagedType.I4)] public int msgSOF;
+            [MarshalAs(UnmanagedType.I4)] public int msgID;
+            [MarshalAs(UnmanagedType.I4)] public int msgSize;
+            [MarshalAs(UnmanagedType.I4)] public int msgType;
+            [MarshalAs(UnmanagedType.I4)] public int msgErr;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgUser;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgTime;
 
-            public void FillClientHeader(COMMAND id)
+            public void FillClientHeader(int id)
             {
-                msgID = (uint)id;
-                msgSize = (uint)Marshal.SizeOf(this);
-                msgSOF = (uint)MAGIC.SOF;
-                msgType = (uint)TYPE.REQ;
-                msgErr = (uint)ERRORCODE.NOERROR;
+                msgID = id;
+                msgSize = Marshal.SizeOf(this);
+                msgSOF = DEF.MAGIC_SOF;
+                msgType = DEF.TYPE_REQ;
+                msgErr = DEF.ERR_NoError;
                 msgUser = MyInfo.mMyInfo.userID;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
-            public void FillHeader(COMMAND id, TYPE type, string user)
+            public void FillHeader(int id, int type, string user)
             {
-                msgID = (uint)id;
-                msgSize = (uint)Marshal.SizeOf(this);
-                msgSOF = (uint)MAGIC.SOF;
-                msgType = (uint)type;
-                msgErr = (uint)ERRORCODE.NOERROR;
+                msgID = id;
+                msgSize = Marshal.SizeOf(this);
+                msgSOF = DEF.MAGIC_SOF;
+                msgType = type;
+                msgErr = DEF.ERR_NoError;
                 msgUser = user;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
-            public void FillServerHeader(COMMAND id)
+            public void FillServerHeader(int id)
             {
-                msgID = (uint)id;
-                msgSize = (uint)Marshal.SizeOf(this);
-                msgSOF = (uint)MAGIC.SOF;
-                msgType = (uint)TYPE.REP;
-                msgErr = (uint)ERRORCODE.NOERROR;
+                msgID = id;
+                msgSize = Marshal.SizeOf(this);
+                msgSOF = DEF.MAGIC_SOF;
+                msgType = DEF.TYPE_REQ;
+                msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
@@ -140,10 +129,9 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Task : HEADER
         {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint recordID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint cmdID;
+            [MarshalAs(UnmanagedType.I4)] public int recordID;
+            [MarshalAs(UnmanagedType.I4)] public int cmdID;
+            [MarshalAs(UnmanagedType.I4)] public int progress;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
@@ -172,8 +160,6 @@ namespace IWAS
             public string preDue;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string state;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint progress;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string priority;
 
@@ -182,10 +168,8 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class TaskEdit : HEADER
         {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint recordID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint taskID;
+            [MarshalAs(UnmanagedType.I4)] public int recordID;
+            [MarshalAs(UnmanagedType.I4)] public int taskID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string info;
 
@@ -194,14 +178,10 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Chat : HEADER
         {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint roomID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint cmdID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint taskID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint FileID;
+            [MarshalAs(UnmanagedType.I4)] public int recordID;
+            [MarshalAs(UnmanagedType.I4)] public int cmdID;
+            [MarshalAs(UnmanagedType.I4)] public int taskID;
+            [MarshalAs(UnmanagedType.I4)] public int FileID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
@@ -218,16 +198,11 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class File : HEADER
         {
-            [MarshalAs(UnmanagedType.U4)]
-            public uint fileID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint filsSize;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint chatID;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint packetIDX;
-            [MarshalAs(UnmanagedType.U4)]
-            public uint packetCNT;
+            [MarshalAs(UnmanagedType.I4)] public int recordID;
+            [MarshalAs(UnmanagedType.I4)] public int filsSize;
+            [MarshalAs(UnmanagedType.I4)] public int chatID;
+            [MarshalAs(UnmanagedType.I4)] public int packetIDX;
+            [MarshalAs(UnmanagedType.I4)] public int packetCNT;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]

@@ -129,18 +129,18 @@ namespace IWAS
             byte[] headBuf = pack.buf.readSize(headSize);
             HEADER head = new HEADER();
             head.Deserialize(ref headBuf);
-            if (head.msgSOF != (uint)ICD.MAGIC.SOF)
+            if (head.msgSOF != ICD.DEF.MAGIC_SOF)
             {
                 pack.buf.Clear();
                 return;
             }
 
-            uint msgSize = head.msgSize;
+            int msgSize = head.msgSize;
             if (nRecvLen < msgSize)
                 return;
 
-            byte[] msgBuf = pack.buf.Pop((int)msgSize);
-            HEADER msg = CreateIcdObject((int)head.msgSize);
+            byte[] msgBuf = pack.buf.Pop(msgSize);
+            HEADER msg = CreateIcdObject(head.msgSize);
             msg.Deserialize(ref msgBuf);
             OnRecv?.Invoke(pack.ClientID, msg);
         }

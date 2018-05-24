@@ -23,14 +23,14 @@ namespace IWAS
             if (mFuncArray != null)
                 return;
 
-            mFuncArray = new ICDPacketMgr.PacketHandler[(uint)COMMAND.MAX_COUNT];
-            mFuncArray[(uint)COMMAND.NewUser] = ICD_NewUser;
-            mFuncArray[(uint)COMMAND.UserList] = ICD_UserList;
-            mFuncArray[(uint)COMMAND.Login] = ICD_Login;
-            mFuncArray[(uint)COMMAND.Logout] = ICD_Logout;
-            mFuncArray[(uint)COMMAND.TaskNew] = ICD_NewTask;
-            mFuncArray[(uint)COMMAND.TaskEdit] = ICD_EditTask;
-            mFuncArray[(uint)COMMAND.TaskList] = ICD_TaskList;
+            mFuncArray = new ICDPacketMgr.PacketHandler[DEF.CMD_MAX_COUNT];
+            mFuncArray[DEF.CMD_NewUser] = ICD_NewUser;
+            mFuncArray[DEF.CMD_UserList] = ICD_UserList;
+            mFuncArray[DEF.CMD_Login] = ICD_Login;
+            mFuncArray[DEF.CMD_Logout] = ICD_Logout;
+            mFuncArray[DEF.CMD_TaskNew] = ICD_NewTask;
+            mFuncArray[DEF.CMD_TaskEdit] = ICD_EditTask;
+            mFuncArray[DEF.CMD_TaskList] = ICD_TaskList;
 
             ICDPacketMgr.GetInst().StartServiceServer();
 
@@ -52,8 +52,8 @@ namespace IWAS
             if (DatabaseMgr.GetUserInfo(msg.userID) != null)
             {
                 HEADER pack = new HEADER();
-                pack.FillServerHeader(COMMAND.NewUser);
-                pack.msgErr = (uint)ERRORCODE.HaveID;
+                pack.FillServerHeader(DEF.CMD_NewUser);
+                pack.msgErr = DEF.ERR_HaveID;
                 ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
             }
             else
@@ -61,7 +61,7 @@ namespace IWAS
                 DatabaseMgr.NewUser(msg);
 
                 HEADER pack = new HEADER();
-                pack.FillServerHeader(COMMAND.NewUser);
+                pack.FillServerHeader(DEF.CMD_NewUser);
                 ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
             }
         }
@@ -73,7 +73,7 @@ namespace IWAS
                 return;
 
             Message pack = new Message();
-            pack.FillServerHeader(COMMAND.UserList);
+            pack.FillServerHeader(DEF.CMD_UserList);
             foreach(DataRow user in table.Rows)
             {
                 pack.message += user["id"].ToString();
@@ -88,7 +88,7 @@ namespace IWAS
             User msg = obj as User;
             DataRow row = DatabaseMgr.GetUserInfo(msg.userID);
             User pack = new User();
-            pack.FillServerHeader(COMMAND.Login);
+            pack.FillServerHeader(DEF.CMD_Login);
             if (row != null)
             {
                 if (row["pw"].ToString() == msg.userPW)
@@ -98,11 +98,11 @@ namespace IWAS
                     pack.userPW = row["pw"].ToString();
                 }
                 else
-                    pack.msgErr = (uint)ERRORCODE.WorngPW;
+                    pack.msgErr = DEF.ERR_WorngPW;
             }
             else
             {
-                pack.msgErr = (uint)ERRORCODE.NoID;
+                pack.msgErr = DEF.ERR_NoID;
             }
 
             ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
@@ -112,7 +112,7 @@ namespace IWAS
         {
             DelUser(obj.msgUser);
             HEADER pack = new HEADER();
-            pack.FillServerHeader(COMMAND.Logout);
+            pack.FillServerHeader(DEF.CMD_Logout);
             ICDPacketMgr.GetInst().sendMsgToClient(clientID, pack);
         }
 
@@ -123,7 +123,7 @@ namespace IWAS
             int taskID = (int)row["recordID"];
 
             ICD.Task task = new ICD.Task();
-            task.FillServerHeader(COMMAND.TaskInfo);
+            task.FillServerHeader(DEF.CMD_TaskInfo);
             DatabaseMgr.GetTaskLatest(taskID, ref task);
             sendMsg(task.worker, task);
             sendMsg(task.director, task);
@@ -132,10 +132,10 @@ namespace IWAS
         {
             TaskEdit msg = obj as TaskEdit;
             DatabaseMgr.EditTask(msg);
-            int taskID = (int)msg.taskID;
+            int taskID = msg.taskID;
 
             ICD.Task task = new ICD.Task();
-            task.FillServerHeader(COMMAND.TaskInfo);
+            task.FillServerHeader(DEF.CMD_TaskInfo);
             DatabaseMgr.GetTaskLatest(taskID, ref task);
             sendMsg(task.worker, task);
             sendMsg(task.director, task);
@@ -149,7 +149,7 @@ namespace IWAS
             foreach(DataRow row in table.Rows)
             {
                 ICD.Task task = new ICD.Task();
-                task.FillServerHeader(COMMAND.TaskInfo);
+                task.FillServerHeader(DEF.CMD_TaskInfo);
                 DatabaseMgr.GetTaskLatest((int)row["recordID"], ref task);
                 sendMsg(obj.msgUser, task);
             }

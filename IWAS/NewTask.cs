@@ -20,7 +20,7 @@ namespace IWAS
         private void btnNewTask_Click(object sender, EventArgs e)
         {
             ICD.Task msgTask = new ICD.Task();
-            msgTask.FillClientHeader(ICD.COMMAND.TaskNew);
+            msgTask.FillClientHeader(ICD.DEF.CMD_TaskNew);
 
             //comboBox listing
             msgTask.kind = cbType.Text;
