@@ -159,10 +159,7 @@ namespace IWAS
         public void sendMsg(string user, HEADER obj)
         {
             if(user==null || !mUserMap.ContainsKey(user))
-            {
-                LOG.warn();
                 return;
-            }
 
             ICDPacketMgr.GetInst().sendMsgToClient(mUserMap[user], obj);
         }

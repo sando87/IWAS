@@ -96,7 +96,7 @@ namespace IWAS
 
             ICD.Task task = obj as ICD.Task;
             mTasks[task.recordID] = task;
-            AddListView(task);
+            UpdateListView();
         }
 
         private void NewTask_Click(object sender, EventArgs e)
