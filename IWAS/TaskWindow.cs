@@ -19,26 +19,18 @@ namespace IWAS
         {
             InitializeComponent();
 
-//            mTask = task;
-        }
-
-        ~TaskWindow()
-        {
-            LOG.trace();
-            ICDPacketMgr.GetInst().OnRecv -= OnRecvEditTask;
-            // += -= 메커니즘 확인 필요~!!
+            mTask = task;
         }
 
         private void TaskWindow_Load(object sender, EventArgs e)
         {
-            mTask.preLaunch = "870406";
-            mTask.title = "testsetset";
-            mTask.comment = "123123";
-            //mTask.kind = "플젝";
 
             updateTaskInfo();
 
             ICDPacketMgr.GetInst().OnRecv += OnRecvEditTask;
+            FormClosed += delegate{
+                ICDPacketMgr.GetInst().OnRecv -= OnRecvEditTask;
+            };
         }
 
         

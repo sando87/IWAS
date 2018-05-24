@@ -123,7 +123,10 @@ namespace IWAS
         }
         public static DataTable GetTasks(string user)
         {
-            string sql = "SELECT * FROM task WHERE worker='" + user + "'";
+            string sql = string.Format(
+                "SELECT * FROM task WHERE worker='{0}' OR director='{1}'",
+                user, user );
+
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
@@ -181,6 +184,9 @@ namespace IWAS
                 string[] infos = value.Split(',');
                 foreach(string info in infos)
                 {
+                    if (info.Length == 0)
+                        continue;
+
                     string[] data = info.Split(':');
                     switch (data[0])
                     {
