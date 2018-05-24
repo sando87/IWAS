@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChatRoom.cs" />
     <Compile Include="ConstDefines.cs" />
     <Compile Include="DatabaseMgr.cs" />
     <Compile Include="FifoBuffer.cs" />

@@ -41,6 +41,13 @@ namespace IWAS
             public const int ERR_HaveID     = 1;
             public const int ERR_NoID       = 2;
             public const int ERR_WorngPW    = 3;
+            
+            public const string CHAT_CMD_NewChat = "채팅방생성";
+            public const string CHAT_CMD_Message = "메세지전송";
+            public const string CHAT_CMD_NewUser = "사용자추가";
+            public const string CHAT_CMD_DelUser = "사용자삭제";
+            public const string CHAT_CMD_InUser = "사용자로그인";
+            public const string CHAT_CMD_OutUser = "사용자로그아웃";
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -178,21 +185,91 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Chat : HEADER
         {
-            [MarshalAs(UnmanagedType.I4)] public int recordID;
-            [MarshalAs(UnmanagedType.I4)] public int cmdID;
-            [MarshalAs(UnmanagedType.I4)] public int taskID;
-            [MarshalAs(UnmanagedType.I4)] public int FileID;
+            [MarshalAs(UnmanagedType.I4)] public int chatID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string createTime;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string user;
+            public string command;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string access;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+            public string info;
+        }
+
+        public class ChatMsgs : HEADER
+        {
+            public int msgCount;
+            public ChatMsg[] msgs;
+
+            public new byte[] Serialize()
+            {
+                List<byte> ary = new List<byte>();
+                HEADER head = new HEADER();
+
+                head.msgSOF = msgSOF;
+                head.msgID = msgID;
+                head.msgSize = msgSize;
+                head.msgType = msgType;
+                head.msgErr = msgErr;
+                head.msgUser = msgUser;
+                head.msgTime = msgTime;
+
+                ary.AddRange(head.Serialize());
+
+                ary.AddRange(BitConverter.GetBytes(msgCount));
+
+                for(int i=0; i<msgCount; ++i)
+                {
+                    int msgSize = Marshal.SizeOf(typeof(ChatMsg));
+                    byte[] src = new byte[msgSize];
+                    var gch = GCHandle.Alloc(src, GCHandleType.Pinned);
+                    var pBuffer = gch.AddrOfPinnedObject();
+                    Marshal.StructureToPtr(msgs[i], pBuffer, false);
+                    gch.Free();
+                    ary.AddRange(src);
+                }
+
+                return ary.ToArray();
+            }
+
+            public new void Deserialize(ref byte[] data)
+            {
+                msgSOF = BitConverter.ToInt32(data, 0);
+                msgID = BitConverter.ToInt32(data, 4);
+                msgSize = BitConverter.ToInt32(data, 8);
+                msgType = BitConverter.ToInt32(data, 12);
+                msgErr = BitConverter.ToInt32(data, 16);
+
+                msgUser = Encoding.ASCII.GetString(data, 20, 50).TrimEnd('\0');
+                msgTime = Encoding.ASCII.GetString(data, 70, 50).TrimEnd('\0');
+
+                int headLen = HEADER.HeaderSize();
+                msgCount = BitConverter.ToInt32(data, headLen);
+                msgs = new ChatMsg[msgCount];
+                for (int i=0; i<msgCount; ++i)
+                {
+                    int msgSize = Marshal.SizeOf(typeof(ChatMsg));
+                    byte[] dest = new byte[msgSize];
+                    int off = headLen + 4 + (i * msgSize);
+                    Array.Copy(data, off, dest, 0, msgSize);
+
+                    msgs[i] = new ChatMsg();
+                    var gch = GCHandle.Alloc(dest, GCHandleType.Pinned);
+                    Marshal.PtrToStructure(gch.AddrOfPinnedObject(), msgs[i]);
+                    gch.Free();
+                }
+                
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        public class ChatMsg
+        {
+            [MarshalAs(UnmanagedType.I4)] public int msgID;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string priority;
+            public string time;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string user;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string message;
-
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
