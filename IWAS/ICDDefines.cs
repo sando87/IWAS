@@ -21,13 +21,21 @@ namespace IWAS
             public const int CMD_TaskDelete     = 7;
             public const int CMD_TaskList       = 8;
             public const int CMD_TaskInfo       = 9;
-            public const int CMD_NewChat        = 10;
-            public const int CMD_AddChat        = 11;
+            //public const int CMD_NewChat        = 10;
+            //public const int CMD_AddChat        = 11;
             public const int CMD_UploadFile     = 12;
             public const int CMD_DownloadFile   = 13;
             public const int CMD_LogMessage     = 14;
             public const int CMD_Search         = 15;
-            public const int CMD_MAX_COUNT      = 16;
+            public const int CMD_NewChat        = 16;
+            public const int CMD_ChatMsg        = 17;
+            public const int CMD_AddChatUser    = 18;
+            public const int CMD_DelChatUser    = 19;
+            public const int CMD_ShowChat       = 20;
+            public const int CMD_HideChat       = 21;
+            public const int CMD_ChatMsgList    = 22;
+            public const int CMD_ChatUserList   = 23;
+            public const int CMD_MAX_COUNT      = 24;
 
             public const int TYPE_REQ = 1;
             public const int TYPE_ACK = 2;
@@ -42,12 +50,6 @@ namespace IWAS
             public const int ERR_NoID       = 2;
             public const int ERR_WorngPW    = 3;
             
-            public const string CHAT_CMD_NewChat = "채팅방생성";
-            public const string CHAT_CMD_Message = "메세지전송";
-            public const string CHAT_CMD_NewUser = "사용자추가";
-            public const string CHAT_CMD_DelUser = "사용자삭제";
-            public const string CHAT_CMD_InUser = "사용자로그인";
-            public const string CHAT_CMD_OutUser = "사용자로그아웃";
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
@@ -185,9 +187,8 @@ namespace IWAS
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
         public class Chat : HEADER
         {
-            [MarshalAs(UnmanagedType.I4)] public int chatID;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string command;
+            [MarshalAs(UnmanagedType.I4)] public int recordID;
+            [MarshalAs(UnmanagedType.I4)] public int state;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string access;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]

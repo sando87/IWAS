@@ -17,6 +17,7 @@ namespace IWAS
         ICDPacketMgr.PacketHandler[] mFuncArray = null;
 
         private Dictionary<string, int> mUserMap = new Dictionary<string, int>();
+        private Dictionary<int, ChatRoom> mRooms = new Dictionary<int, ChatRoom>();
 
         public void StartService()
         {
@@ -31,6 +32,12 @@ namespace IWAS
             mFuncArray[DEF.CMD_TaskNew] = ICD_NewTask;
             mFuncArray[DEF.CMD_TaskEdit] = ICD_EditTask;
             mFuncArray[DEF.CMD_TaskList] = ICD_TaskList;
+            mFuncArray[DEF.CMD_NewChat] = ICD_NewChat;
+            mFuncArray[DEF.CMD_ChatMsg] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_AddChatUser] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_DelChatUser] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_ShowChat] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_HideChat] = ICD_ProcChat;
 
             ICDPacketMgr.GetInst().StartServiceServer();
 
@@ -155,6 +162,26 @@ namespace IWAS
             }
         }
 
+        private void ICD_NewChat(int clientID, HEADER obj)
+        {
+            Chat msg = (Chat)obj;
+            int chatID = DatabaseMgr.PushNewChat(msg);
+            ChatRoom room = new ChatRoom();
+            room.Init(chatID);
+            mRooms[chatID] = room;
+        }
+
+        private void ICD_ProcChat(int clientID, HEADER obj)
+        {
+            Chat msg = (Chat)obj;
+            if( !mRooms.ContainsKey(msg.recordID) )
+            {
+                LOG.warn();
+                return;
+            }
+
+            mRooms[msg.recordID].ProcChat(msg);
+        }
 
         public void sendMsg(string user, HEADER obj)
         {
