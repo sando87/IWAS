@@ -27,15 +27,18 @@ namespace IWAS
             public const int CMD_DownloadFile   = 13;
             public const int CMD_LogMessage     = 14;
             public const int CMD_Search         = 15;
+
             public const int CMD_NewChat        = 16;
             public const int CMD_ChatMsg        = 17;
-            public const int CMD_AddChatUser    = 18;
+            public const int CMD_SetChatUsers   = 18;
             public const int CMD_DelChatUser    = 19;
             public const int CMD_ShowChat       = 20;
             public const int CMD_HideChat       = 21;
             public const int CMD_ChatMsgList    = 22;
             public const int CMD_ChatUserList   = 23;
-            public const int CMD_MAX_COUNT      = 24;
+            public const int CMD_ChatRoomList   = 24;
+            public const int CMD_AlarmChat      = 25;
+            public const int CMD_MAX_COUNT      = 26;
 
             public const int TYPE_REQ = 1;
             public const int TYPE_ACK = 2;

@@ -21,8 +21,8 @@ namespace IWAS
             public string message;
         }
 
-        int mRoomID;
-        int mCntLoingUser;
+        private int mRoomID;
+        private int mCntLoingUser;
         Dictionary<string, int> mUsers = new Dictionary<string, int>();//int값은 User의 현재 메세지 위치를 기억함
         List<MsgInfo> mMessages = new List<MsgInfo>();
 
@@ -57,8 +57,10 @@ namespace IWAS
             string[] users = visitors.Split(',');
             foreach (string user in users)
             {
-                mUsers[user] = cntMessages;
+                if(user.Length > 0)
+                    mUsers[user] = cntMessages;
             }
+
         }
         public void ProcChat(Chat obj)
         {
@@ -67,11 +69,8 @@ namespace IWAS
                 case DEF.CMD_ChatMsg:
                     ProcMessage(obj);
                     break;
-                case DEF.CMD_AddChatUser:
-                    ProcNewUser(obj);
-                    break;
-                case DEF.CMD_DelChatUser:
-                    ProcDelUser(obj);
+                case DEF.CMD_SetChatUsers:
+                    ProcSetUsers(obj);
                     break;
                 case DEF.CMD_ShowChat:
                     ProcInUser(obj);
@@ -100,6 +99,17 @@ namespace IWAS
             {
                 MsgCtrl.GetInst().sendMsg(user.Key, msg);
             }
+        }
+
+        private int CountLoginUser()
+        {
+            int ret = 0;
+            foreach(var item in mUsers)
+            {
+                if (item.Value == -1)
+                    ret++;
+            }
+            return ret;
         }
 
         private void BroadcastSignaledMsgs()
@@ -133,57 +143,99 @@ namespace IWAS
                 return;
             }
 
+            int msgCount = mMessages.Count;
             foreach(var user in mUsers)
             {
-                MsgCtrl.GetInst().sendMsg(user.Key, msg);
+                if(user.Value == -1) //user가 채팅방 창을 보고있는 상태
+                {
+                    msg.msgID = DEF.CMD_ChatMsgList;
+                    msg.state = 0;
+                    MsgCtrl.GetInst().sendMsg(user.Key, msg);
+                }
+                else//user가 채팅방 창을 안보는 상태는 알람 message 전송
+                {
+                    msg.msgID = DEF.CMD_AlarmChat;
+                    msg.state = msgCount - user.Value;
+                    MsgCtrl.GetInst().sendMsg(user.Key, msg);
+                }
+                
             }
         }
         private void ProcMessage(Chat obj)
         {
-            int msgID = DatabaseMgr.PushChatMessage(obj);
+            DataRow row = DatabaseMgr.PushChatMessage(obj);
+            int msgID = (int)row["recordID"];
             MsgInfo item = new MsgInfo();
             item.msgID = msgID;
             item.time = obj.msgTime;
             item.user = obj.msgUser;
             item.tick = mUsers.Count - mCntLoingUser;
-            if (item.tick < 0)
-                item.tick = 0;
             item.message = obj.info.Substring(0, obj.info.Length);
             item.isSignaled = true;
             mMessages.Add(item);
             BroadcastSignaledMsgs();
         }
-        private void ProcNewUser(Chat obj)
+        private void ProcSetUsers(Chat obj)
         {
-            mUsers[obj.info] = mMessages.Count;
-            BroadcastChatUsers();
-        }
-        private void ProcDelUser(Chat obj)
-        {
-            mUsers[obj.info] = -2;
-            mUsers.Remove(obj.info);
+            foreach(var item in mUsers)
+            {
+                if( !obj.info.Contains(item.Key) )
+                {
+                    Chat msg = new Chat();
+                    msg.FillServerHeader(DEF.CMD_DelChatUser);
+                    msg.recordID = mRoomID;
+                    MsgCtrl.GetInst().sendMsg(item.Key, msg);
+
+                    mUsers.Remove(item.Key);
+                }
+            }
+
+            string[] newUsers = obj.info.Split(',');
+            foreach (var user in newUsers)
+            {
+                if (user.Length > 0 && !mUsers.ContainsKey(user))
+                    mUsers[user] = mMessages.Count;
+            }
+
+            mCntLoingUser = CountLoginUser();
+            DatabaseMgr.EditChatUsers(obj);
             BroadcastChatUsers();
         }
         private void ProcInUser(Chat obj)
         {
-            mCntLoingUser++;
             int curCount = mUsers[obj.msgUser];
             mUsers[obj.msgUser] = -1;
+            mCntLoingUser = CountLoginUser();
+            int curTick = mUsers.Count - mCntLoingUser;
             int totalCount = mMessages.Count;
             for (int i=curCount; i< totalCount; ++i)
             {
                 mMessages[i].isSignaled = true;
-                mMessages[i].tick = (mMessages[i].tick > 0) ? mMessages[i].tick - 1 : 0;
+                mMessages[i].tick = curTick;
             }
             BroadcastSignaledMsgs();
         }
         private void ProcOutUser(Chat obj)
         {
-            if(mCntLoingUser>0)
-                mCntLoingUser--;
-
             mUsers[obj.msgUser] = mMessages.Count;
+            mCntLoingUser = CountLoginUser();
+        }
+        public int GetUserState(string user)
+        {
+            if( !mUsers.ContainsKey(user) )
+                return -1;
 
+            return mMessages.Count - mUsers[user];
+        }
+        public string GetUserList()
+        {
+            string list = "";
+            foreach(var item in mUsers)
+            {
+                list += item.Key;
+                list += ",";
+            }
+            return list;
         }
     }
 }

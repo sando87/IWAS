@@ -32,12 +32,13 @@ namespace IWAS
             mFuncArray[DEF.CMD_TaskNew] = ICD_NewTask;
             mFuncArray[DEF.CMD_TaskEdit] = ICD_EditTask;
             mFuncArray[DEF.CMD_TaskList] = ICD_TaskList;
+
             mFuncArray[DEF.CMD_NewChat] = ICD_NewChat;
             mFuncArray[DEF.CMD_ChatMsg] = ICD_ProcChat;
-            mFuncArray[DEF.CMD_AddChatUser] = ICD_ProcChat;
-            mFuncArray[DEF.CMD_DelChatUser] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_SetChatUsers] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ShowChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_HideChat] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_ChatRoomList] = ICD_ChatRoomList;
 
             ICDPacketMgr.GetInst().StartServiceServer();
 
@@ -165,7 +166,8 @@ namespace IWAS
         private void ICD_NewChat(int clientID, HEADER obj)
         {
             Chat msg = (Chat)obj;
-            int chatID = DatabaseMgr.PushNewChat(msg);
+            DataRow row = DatabaseMgr.PushNewChat(msg);
+            int chatID = (int)row["recordID"];
             ChatRoom room = new ChatRoom();
             room.Init(chatID);
             mRooms[chatID] = room;
@@ -183,6 +185,23 @@ namespace IWAS
             mRooms[msg.recordID].ProcChat(msg);
         }
 
+        private void ICD_ChatRoomList(int clientID, HEADER obj)
+        {
+            Chat msg = new Chat();
+            foreach (var item in mRooms)
+            {
+                int state = item.Value.GetUserState(obj.msgUser);
+                if(state != -1)
+                {
+                    msg.FillServerHeader(DEF.CMD_ChatRoomList);
+                    msg.recordID = item.Key;
+                    msg.state = state;
+                    msg.info = item.Value.GetUserList();
+                    sendMsg(obj.msgUser, msg);
+                }
+            }
+        }
+        
         public void sendMsg(string user, HEADER obj)
         {
             if(user==null || !mUserMap.ContainsKey(user))
