@@ -11,7 +11,7 @@ namespace IWAS
 {
     class ChatRoom
     {
-        class MsgInfo
+        public class MsgInfo
         {
             public int msgID;
             public int tick;
@@ -26,7 +26,7 @@ namespace IWAS
         Dictionary<string, int> mUsers = new Dictionary<string, int>();//int값은 User의 현재 메세지 위치를 기억함
         List<MsgInfo> mMessages = new List<MsgInfo>();
 
-        public void Init(int chatID)
+        private void Init(int chatID)
         {
             mRoomID = chatID;
             mCntLoingUser = 0;
@@ -72,11 +72,17 @@ namespace IWAS
                 case DEF.CMD_SetChatUsers:
                     ProcSetUsers(obj);
                     break;
+                case DEF.CMD_DelChatUser:
+                    ProcDelUser(obj);
+                    break;
                 case DEF.CMD_ShowChat:
                     ProcInUser(obj);
                     break;
                 case DEF.CMD_HideChat:
                     ProcOutUser(obj);
+                    break;
+                case DEF.CMD_ChatUserList:
+                    ProcUserList(obj);
                     break;
                 default:
                     LOG.warn();
@@ -84,6 +90,27 @@ namespace IWAS
             }
         }
 
+        public int ProcNewChat(Chat obj)
+        {
+            DataRow row = DatabaseMgr.PushNewChat(obj);
+            mRoomID = (int)row["recordID"];
+            Init(mRoomID);
+            Chat tmp = new Chat();
+            tmp.recordID = mRoomID;
+            tmp.info = obj.info;
+            ProcSetUsers(obj);
+            return mRoomID;
+        }
+        private void ProcUserList(Chat obj)
+        {
+            Chat msg = new Chat();
+            msg.FillServerHeader(DEF.CMD_ChatUserList);
+            msg.recordID = mRoomID;
+            foreach (var user in mUsers)
+                msg.info += String.Format("%s,", user.Key);
+
+            MsgCtrl.GetInst().sendMsg(obj.msgUser, msg);
+        }
 
         private void BroadcastChatUsers()
         {
@@ -92,7 +119,7 @@ namespace IWAS
             msg.recordID = mRoomID;
             foreach (var user in mUsers)
             {
-                msg.info += String.Format("%s\0",user.Key);
+                msg.info += String.Format("%s,",user.Key);
             }
 
             foreach (var user in mUsers)
@@ -175,6 +202,22 @@ namespace IWAS
             mMessages.Add(item);
             BroadcastSignaledMsgs();
         }
+        private void ProcDelUser(Chat obj)
+        {
+            if (mUsers.ContainsKey(obj.info))
+            {
+                mUsers.Remove(obj.info);
+
+                Chat tmp = new Chat();
+                tmp.recordID = mRoomID;
+                tmp.info = GetUserList();
+                DatabaseMgr.EditChatUsers(tmp);
+
+                mCntLoingUser = CountLoginUser();
+
+                BroadcastChatUsers();
+            }
+        }
         private void ProcSetUsers(Chat obj)
         {
             foreach(var item in mUsers)
@@ -217,8 +260,11 @@ namespace IWAS
         }
         private void ProcOutUser(Chat obj)
         {
-            mUsers[obj.msgUser] = mMessages.Count;
-            mCntLoingUser = CountLoginUser();
+            if(mUsers.ContainsKey(obj.msgUser))
+            {
+                mUsers[obj.msgUser] = mMessages.Count;
+                mCntLoingUser = CountLoginUser();
+            }
         }
         public int GetUserState(string user)
         {

@@ -53,6 +53,18 @@
     <Compile Include="ChatRoom.cs" />
     <Compile Include="ConstDefines.cs" />
     <Compile Include="DatabaseMgr.cs" />
+    <Compile Include="DlgChatRoom.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DlgChatRoom.Designer.cs">
+      <DependentUpon>DlgChatRoom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DlgEditChatUsers.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DlgEditChatUsers.Designer.cs">
+      <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
+    </Compile>
     <Compile Include="FifoBuffer.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">
@@ -103,6 +115,12 @@
     <Compile Include="UserList.Designer.cs">
       <DependentUpon>UserList.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="DlgChatRoom.resx">
+      <DependentUpon>DlgChatRoom.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DlgEditChatUsers.resx">
+      <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="login.resx">
       <DependentUpon>login.cs</DependentUpon>
     </EmbeddedResource>

@@ -13,6 +13,7 @@ namespace IWAS
 {
     public partial class MyTasks : Form
     {
+        static public Dictionary<int, ICD.Chat> mChats = new Dictionary<int, ICD.Chat>();
         static public Dictionary<int, ICD.Task> mTasks = new Dictionary<int, ICD.Task>();
 
         public MyTasks()
@@ -39,6 +40,9 @@ namespace IWAS
             msg.FillClientHeader(ICD.DEF.CMD_TaskList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
+            ICD.HEADER chatMsg = new ICD.HEADER();
+            chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList);
+            ICDPacketMgr.GetInst().sendMsgToServer(chatMsg);
         }
 
         private void InitListView()
@@ -47,20 +51,39 @@ namespace IWAS
             TaskList.GridLines = true;
             TaskList.FullRowSelect = true;
             TaskList.Sorting = SortOrder.Ascending;
-
             TaskList.Columns.Add("id");
             TaskList.Columns[0].Width = 50;
             TaskList.Columns.Add("title");
             TaskList.Columns[1].Width = 300;
 
+            lvChat.View = View.Details;
+            lvChat.GridLines = true;
+            lvChat.FullRowSelect = true;
+            lvChat.Sorting = SortOrder.Ascending;
+            lvChat.Columns.Add("id");
+            lvChat.Columns[0].Width = 50;
+            lvChat.Columns.Add("title");
+            lvChat.Columns[1].Width = 200;
+            lvChat.Columns.Add("state");
+            lvChat.Columns[2].Width = 100;
+
         }
-        private void UpdateListView()
+        private void UpdateTaskList()
         {
             TaskList.Items.Clear();
 
             foreach (KeyValuePair<int, ICD.Task> task in mTasks)
             {
                 AddListView(task.Value);
+            }
+        }
+        private void UpdateChatList()
+        {
+            lvChat.Items.Clear();
+
+            foreach (KeyValuePair<int, ICD.Chat> chat in mChats)
+            {
+                AddListView(chat.Value);
             }
         }
         private void AddListView(ICD.Task task)
@@ -72,6 +95,17 @@ namespace IWAS
             ListViewItem lvItems = new ListViewItem(infos);
             TaskList.Items.Add(lvItems);
         }
+        private void AddListView(ICD.Chat chat)
+        {
+            string[] infos = new string[3];
+            infos[0] = chat.recordID.ToString();
+            infos[1] = chat.info;
+            infos[2] = chat.state.ToString();
+
+            ListViewItem lvItems = new ListViewItem(infos);
+            lvChat.Items.Add(lvItems);
+        }
+
 
         private void OnRecv_ICDMessages(int clientID, ICD.HEADER o)
         {
@@ -81,9 +115,26 @@ namespace IWAS
                 case ICD.DEF.CMD_TaskInfo:
                     OnRecv_TaskInfo(obj);
                     break;
+                case ICD.DEF.CMD_ChatRoomList:
+                    OnRecv_TaskInfo(obj);
+                    break;
                 default:
                     break;
             }
+        }
+
+
+        private void OnRecv_ChatInfo(ICD.HEADER obj)
+        {
+            if (ICD.DEF.ERR_NoError != obj.msgErr)
+            {
+                LOG.warn();
+                return;
+            }
+
+            ICD.Chat msg = (ICD.Chat)obj;
+            mChats[msg.recordID] = msg;
+            UpdateChatList();
         }
 
         private void OnRecv_TaskInfo(ICD.HEADER obj)
@@ -96,7 +147,7 @@ namespace IWAS
 
             ICD.Task task = obj as ICD.Task;
             mTasks[task.recordID] = task;
-            UpdateListView();
+            UpdateTaskList();
         }
 
         private void NewTask_Click(object sender, EventArgs e)
@@ -117,6 +168,20 @@ namespace IWAS
                 TaskWindow window = new TaskWindow(objTask);
                 window.ShowDialog();
             }
+        }
+
+        private void lvChat_DoubleClick(object sender, EventArgs e)
+        {
+            if (lvChat.SelectedItems.Count == 1)
+            {
+                var items = lvChat.SelectedItems;
+                ListViewItem lvItem = items[0];
+                string strID = lvItem.SubItems[0].Text;
+                int chatID = int.Parse(strID);
+                DlgChatRoom room = new DlgChatRoom(chatID);
+                room.ShowDialog();
+            }
+
         }
     }
 }

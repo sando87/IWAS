@@ -64,6 +64,7 @@
             "개발업무",
             "이슈개선",
             "스터디",
+            "채팅",
             "기타"});
             this.cbType.Location = new System.Drawing.Point(76, 9);
             this.cbType.Name = "cbType";

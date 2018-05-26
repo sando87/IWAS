@@ -30,6 +30,7 @@
         {
             this.NewTask = new System.Windows.Forms.Button();
             this.TaskList = new System.Windows.Forms.ListView();
+            this.lvChat = new System.Windows.Forms.ListView();
             this.SuspendLayout();
             // 
             // NewTask
@@ -45,17 +46,29 @@
             // TaskList
             // 
             this.TaskList.Location = new System.Drawing.Point(13, 43);
+            this.TaskList.MultiSelect = false;
             this.TaskList.Name = "TaskList";
             this.TaskList.Size = new System.Drawing.Size(259, 129);
             this.TaskList.TabIndex = 1;
             this.TaskList.UseCompatibleStateImageBehavior = false;
             this.TaskList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.TaskList_MouseDoubleClick);
             // 
+            // lvChat
+            // 
+            this.lvChat.Location = new System.Drawing.Point(13, 205);
+            this.lvChat.MultiSelect = false;
+            this.lvChat.Name = "lvChat";
+            this.lvChat.Size = new System.Drawing.Size(259, 157);
+            this.lvChat.TabIndex = 2;
+            this.lvChat.UseCompatibleStateImageBehavior = false;
+            this.lvChat.DoubleClick += new System.EventHandler(this.lvChat_DoubleClick);
+            // 
             // MyTasks
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 261);
+            this.ClientSize = new System.Drawing.Size(284, 374);
+            this.Controls.Add(this.lvChat);
             this.Controls.Add(this.TaskList);
             this.Controls.Add(this.NewTask);
             this.Name = "MyTasks";
@@ -69,5 +82,6 @@
 
         private System.Windows.Forms.Button NewTask;
         private System.Windows.Forms.ListView TaskList;
+        private System.Windows.Forms.ListView lvChat;
     }
 }

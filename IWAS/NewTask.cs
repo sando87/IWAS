@@ -19,27 +19,46 @@ namespace IWAS
 
         private void btnNewTask_Click(object sender, EventArgs e)
         {
-            ICD.Task msgTask = new ICD.Task();
-            msgTask.FillClientHeader(ICD.DEF.CMD_TaskNew);
+            if(cbType.Text == "채팅")
+            {
+                ICD.Chat msgNewChat = new ICD.Chat();
+                msgNewChat.FillClientHeader(ICD.DEF.CMD_NewChat);
+                msgNewChat.access = cbAccess.Text;
+                if(btnDirector.Text == btnWorker.Text)
+                {
+                    msgNewChat.info = btnDirector.Text;
+                }
+                else
+                {
+                    msgNewChat.info = btnDirector.Text + "," + btnWorker.Text;
+                }
+                ICDPacketMgr.GetInst().sendMsgToServer(msgNewChat);
 
-            //comboBox listing
-            msgTask.kind = cbType.Text;
-            msgTask.access = cbAccess.Text;
-            msgTask.mainCategory = cbMainCate.Text;
-            msgTask.subCategory = cbSubCate.Text;
-            //formatting date
-            msgTask.preLaunch = tbLaunch.Text;
-            msgTask.preDue = tbDue.Text;
-            msgTask.preterm = tbTerm.Text;
-            msgTask.priority = cbPriority.Text;
-            //user listing
-            msgTask.creator = MyInfo.mMyInfo.userID;
-            msgTask.director = btnDirector.Text;
-            msgTask.worker = btnWorker.Text;
-            msgTask.title = tbTitle.Text;
-            msgTask.comment = tbComment.Text;
+            }
+            else
+            {
+                ICD.Task msgTask = new ICD.Task();
+                msgTask.FillClientHeader(ICD.DEF.CMD_TaskNew);
 
-            ICDPacketMgr.GetInst().sendMsgToServer(msgTask);
+                //comboBox listing
+                msgTask.kind = cbType.Text;
+                msgTask.access = cbAccess.Text;
+                msgTask.mainCategory = cbMainCate.Text;
+                msgTask.subCategory = cbSubCate.Text;
+                //formatting date
+                msgTask.preLaunch = tbLaunch.Text;
+                msgTask.preDue = tbDue.Text;
+                msgTask.preterm = tbTerm.Text;
+                msgTask.priority = cbPriority.Text;
+                //user listing
+                msgTask.creator = MyInfo.mMyInfo.userID;
+                msgTask.director = btnDirector.Text;
+                msgTask.worker = btnWorker.Text;
+                msgTask.title = tbTitle.Text;
+                msgTask.comment = tbComment.Text;
+
+                ICDPacketMgr.GetInst().sendMsgToServer(msgTask);
+            }
             Close();
         }
 

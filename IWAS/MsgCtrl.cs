@@ -165,11 +165,8 @@ namespace IWAS
 
         private void ICD_NewChat(int clientID, HEADER obj)
         {
-            Chat msg = (Chat)obj;
-            DataRow row = DatabaseMgr.PushNewChat(msg);
-            int chatID = (int)row["recordID"];
             ChatRoom room = new ChatRoom();
-            room.Init(chatID);
+            int chatID = room.ProcNewChat((Chat)obj);
             mRooms[chatID] = room;
         }
 
