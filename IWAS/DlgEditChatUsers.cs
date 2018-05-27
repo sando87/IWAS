@@ -31,7 +31,7 @@ namespace IWAS
             };
 
             Chat msgUser = new Chat();
-            msgUser.FillClientHeader(DEF.CMD_ChatUserList);
+            msgUser.FillClientHeader(DEF.CMD_ChatRoomInfo);
             msgUser.recordID = mRoomID;
             ICDPacketMgr.GetInst().sendMsgToServer(msgUser);
 
@@ -60,7 +60,7 @@ namespace IWAS
 
         private void OnProcChatUsers(int clientID, ICD.HEADER obj)
         {
-            if (obj.msgID == DEF.CMD_ChatUserList)
+            if (obj.msgID == DEF.CMD_ChatRoomInfo)
             {
                 Chat msg = (Chat)obj;
                 string[] infos = msg.info.Split(',');

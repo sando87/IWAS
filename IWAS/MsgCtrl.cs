@@ -38,7 +38,10 @@ namespace IWAS
             mFuncArray[DEF.CMD_SetChatUsers] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ShowChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_HideChat] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_ChatMsgAll] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatRoomList] = ICD_ChatRoomList;
+
+            InitChatRooms();
 
             ICDPacketMgr.GetInst().StartServiceServer();
 
@@ -163,6 +166,21 @@ namespace IWAS
             }
         }
 
+        private void InitChatRooms()
+        {
+            DataTable table = DatabaseMgr.GetChatRoomList();
+            if (table == null)
+                return;
+
+            foreach(DataRow row in table.Rows)
+            {
+                int chatID = (int)row["recordID"];
+                ChatRoom room = new ChatRoom();
+                room.Init(chatID);
+                mRooms[chatID] = room;
+            }
+        }
+
         private void ICD_NewChat(int clientID, HEADER obj)
         {
             ChatRoom room = new ChatRoom();
@@ -190,7 +208,7 @@ namespace IWAS
                 int state = item.Value.GetUserState(obj.msgUser);
                 if(state != -1)
                 {
-                    msg.FillServerHeader(DEF.CMD_ChatRoomList);
+                    msg.FillServerHeader(DEF.CMD_ChatRoomInfo);
                     msg.recordID = item.Key;
                     msg.state = state;
                     msg.info = item.Value.GetUserList();

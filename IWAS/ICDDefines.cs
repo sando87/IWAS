@@ -35,10 +35,11 @@ namespace IWAS
             public const int CMD_ShowChat       = 20;
             public const int CMD_HideChat       = 21;
             public const int CMD_ChatMsgList    = 22;
-            public const int CMD_ChatUserList   = 23;
+            public const int CMD_ChatRoomInfo   = 23;
             public const int CMD_ChatRoomList   = 24;
             public const int CMD_AlarmChat      = 25;
-            public const int CMD_MAX_COUNT      = 26;
+            public const int CMD_ChatMsgAll     = 26;
+            public const int CMD_MAX_COUNT      = 27;
 
             public const int TYPE_REQ = 1;
             public const int TYPE_ACK = 2;

@@ -115,8 +115,8 @@ namespace IWAS
                 case ICD.DEF.CMD_TaskInfo:
                     OnRecv_TaskInfo(obj);
                     break;
-                case ICD.DEF.CMD_ChatRoomList:
-                    OnRecv_TaskInfo(obj);
+                case ICD.DEF.CMD_ChatRoomInfo:
+                    OnRecv_ChatInfo(obj);
                     break;
                 default:
                     break;

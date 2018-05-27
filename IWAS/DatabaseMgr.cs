@@ -19,7 +19,7 @@ namespace IWAS
         string sql_b1 = "INSERT INTO user (id, pw, date, auth) " +
             "VALUES('test', 'test', '20180507', 2)";
         string sql_b2 = "INSERT INTO user VALUES('test', 'test', '20180507', 2)";
-        string sql_c = "DELETE user WHERE id='sando'";
+        string sql_c = "DELETE FROM user WHERE id='sando'";
         string sql_d = "UPDATE user SET auth=1 WHERE id='sando'";
         */
 
@@ -243,6 +243,17 @@ namespace IWAS
                 return null;
 
             return ds.Tables["Chat"].Rows[0];
+        }
+        public static DataTable GetChatRoomList()
+        {
+            string sql = string.Format("SELECT * FROM chat");
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if (adapter.Fill(ds, "Chat") == 0)
+                return null;
+
+            return ds.Tables["Chat"];
         }
         public static DataRow PushChatMessage(ICD.Chat info)
         {
