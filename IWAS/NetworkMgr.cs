@@ -67,7 +67,10 @@ namespace IWAS
         }
         public int connectServer(string ip = "127.0.0.1", int port = PORTNUM)
         {
-            TcpClient client = new TcpClient(ip, port);
+            TcpClient client = null;
+
+            try { client = new TcpClient(ip, port); }
+            catch { LOG.assert(); }
 
             int clientID = createNewClient(client);
             return clientID;

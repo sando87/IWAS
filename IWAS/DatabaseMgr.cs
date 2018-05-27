@@ -39,7 +39,7 @@ namespace IWAS
         }
         public static DataRow GetUserInfo(string key)
         {
-            string sql = "SELECT * FROM user WHERE id='" + key + "'";
+            string sql = "SELECT * FROM user WHERE recordID='" + key + "'";
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
@@ -68,7 +68,7 @@ namespace IWAS
         {
             string sql = string.Format(
                 "INSERT INTO user " +       //user DataBase
-                "(id, pw, date, auth) " +   //Column name
+                "(recordID, password, time, auth) " +   //Column name
                 "VALUES ('{0}', '{1}', '{2}', {3})",     //values list
                 info.userID,
                 info.userPW,
@@ -248,11 +248,12 @@ namespace IWAS
         {
             string sql = string.Format(
                 "INSERT INTO chatHistory " +
-                "(chatID, time, user, info) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}')",
+                "(chatID, time, user, type, info) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
                 info.recordID,
                 info.msgTime,
                 info.msgUser,
+                "메세지",
                 info.info);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);

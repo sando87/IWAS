@@ -84,7 +84,7 @@ namespace IWAS
             pack.FillServerHeader(DEF.CMD_UserList);
             foreach(DataRow user in table.Rows)
             {
-                pack.message += user["id"].ToString();
+                pack.message += user["recordID"].ToString();
                 pack.message += ",";
             }
 
@@ -99,11 +99,11 @@ namespace IWAS
             pack.FillServerHeader(DEF.CMD_Login);
             if (row != null)
             {
-                if (row["pw"].ToString() == msg.userPW)
+                if (row["password"].ToString() == msg.userPW)
                 {
                     AddUser(clientID, msg.userID);
-                    pack.userID = row["id"].ToString();
-                    pack.userPW = row["pw"].ToString();
+                    pack.userID = row["recordID"].ToString();
+                    pack.userPW = row["password"].ToString();
                 }
                 else
                     pack.msgErr = DEF.ERR_WorngPW;

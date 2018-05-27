@@ -47,7 +47,14 @@ namespace IWAS
             [CallerMemberName] string caller = null,
             [CallerLineNumber] int lineNumber = 0)
         {
-            MessageBox.Show("Assert!! [" + caller + "][" + lineNumber + "]");
+            var st = new StackTrace();
+            string msg = "";
+            foreach (var frame in st.GetFrames())
+            {
+                msg += frame.GetMethod().ToString();
+                msg += "\n";
+            }
+            MessageBox.Show("Assert!!\n" + msg);
             Process.GetCurrentProcess().Kill();
         }
 
