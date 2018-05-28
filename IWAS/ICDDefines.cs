@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -41,6 +43,7 @@ namespace IWAS
             public const int CMD_ChatMsgAll     = 26;
             public const int CMD_MAX_COUNT      = 27;
 
+            public const int TYPE_NONE = 0;
             public const int TYPE_REQ = 1;
             public const int TYPE_ACK = 2;
             public const int TYPE_REP = 3;
@@ -69,30 +72,30 @@ namespace IWAS
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgTime;
 
-            public void FillClientHeader(int id)
+            public void FillClientHeader(int id, int size = -1)
             {
                 msgID = id;
-                msgSize = Marshal.SizeOf(this);
+                msgSize = (size==-1)?Marshal.SizeOf(this):size;
                 msgSOF = DEF.MAGIC_SOF;
                 msgType = DEF.TYPE_REQ;
                 msgErr = DEF.ERR_NoError;
                 msgUser = MyInfo.mMyInfo.userID;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
-            public void FillHeader(int id, int type, string user)
+            public void FillHeader(int id)
             {
                 msgID = id;
-                msgSize = Marshal.SizeOf(this);
+                msgSize = HeaderSize();
                 msgSOF = DEF.MAGIC_SOF;
-                msgType = type;
+                msgType = DEF.TYPE_NONE;
                 msgErr = DEF.ERR_NoError;
-                msgUser = user;
+                msgUser = ConstDefines.SYSNAME;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
             }
-            public void FillServerHeader(int id)
+            public void FillServerHeader(int id, int size = -1)
             {
                 msgID = id;
-                msgSize = Marshal.SizeOf(this);
+                msgSize = (size == -1) ? Marshal.SizeOf(this) : size;
                 msgSOF = DEF.MAGIC_SOF;
                 msgType = DEF.TYPE_REQ;
                 msgErr = DEF.ERR_NoError;
@@ -104,7 +107,22 @@ namespace IWAS
                 return Marshal.SizeOf(typeof(HEADER));
             }
 
-            public byte[] Serialize()
+            public HEADER Clone()
+            {
+                HEADER newObj = new HEADER();
+
+                newObj.msgID = msgID;
+                newObj.msgSize = msgSize;
+                newObj.msgSOF = msgSOF;
+                newObj.msgType = msgType;
+                newObj.msgErr = msgErr;
+                newObj.msgUser = msgUser;
+                newObj.msgTime = msgTime;
+
+                return newObj;
+            }
+
+            public virtual byte[] Serialize()
             {
                 // allocate a byte array for the struct data
                 var buffer = new byte[Marshal.SizeOf(this)];
@@ -120,7 +138,7 @@ namespace IWAS
                 return buffer;
             }
 
-            public void Deserialize(ref byte[] data)
+            public virtual void Deserialize(ref byte[] data)
             {
                 var gch = GCHandle.Alloc(data, GCHandleType.Pinned);
                 Marshal.PtrToStructure(gch.AddrOfPinnedObject(), this);
@@ -306,6 +324,100 @@ namespace IWAS
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string message;
 
+        }
+
+        public class ChatRoomList : HEADER
+        {
+            public RoomInfo[] body;
+            public ChatRoomList()
+            {
+                body = new RoomInfo[1];
+                body[0] = new RoomInfo();
+            }
+            public ChatRoomList(int n)
+            {
+                body = new RoomInfo[n];
+            }
+
+            public override byte[] Serialize()
+            {
+                List<byte> ary = new List<byte>();
+
+                byte[] bodyBuf = null;
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bf.Serialize(ms, body);
+                    bodyBuf = ms.ToArray();
+                }
+
+                HEADER head = Clone();
+                head.msgSize = HeaderSize() + bodyBuf.Length;
+                ary.AddRange(head.Serialize());
+                ary.AddRange(bodyBuf);
+
+                return ary.ToArray();
+            }
+
+            public override void Deserialize(ref byte[] data)
+            {
+                int headSize = HEADER.HeaderSize();
+                int bodySize = data.Length - headSize;
+
+                byte[] headBuf = new byte[headSize];
+                Array.Copy(data, 0, headBuf, 0, headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+
+                msgID   = head.msgID;
+                msgSize = head.msgSize;
+                msgSOF  = head.msgSOF;
+                msgType = head.msgType;
+                msgErr  = head.msgErr;
+                msgUser = head.msgUser;
+                msgTime = head.msgTime;
+
+                byte[] bodyBuf = new byte[bodySize];
+                Array.Copy(data, headSize, bodyBuf, 0, bodySize);
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream(bodyBuf))
+                {
+                    body = (RoomInfo[])bf.Deserialize(ms);
+                }
+            }
+        }
+
+        [Serializable]
+        public class RoomInfo
+        {
+            public int recordID;
+            public int state;
+            public string access;
+            public string[] users;
+            public MesgInfo[] mesgs;
+            public string ToStringUserList()
+            {
+                string ret = "";
+                if (users == null)
+                    return ret;
+                
+                foreach(var item in users)
+                {
+                    ret += item;
+                    ret += ",";
+                }
+                return ret.Substring(0, ret.Length-1);
+            }
+        }
+
+        [Serializable]
+        public class MesgInfo
+        {
+            public int recordID;
+            public int tick;
+            public string user;
+            public string time;
+            public string message;
         }
     }
 }

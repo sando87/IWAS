@@ -41,8 +41,9 @@ namespace IWAS
             networkMgr.connectServer(ip, port);
             networkMgr.startAsync();
         }
-        private HEADER CreateIcdObject(int msgSize)
+        private HEADER CreateIcdObject(HEADER head)
         {
+            int msgSize = head.msgSize;
             if (msgSize == Marshal.SizeOf(typeof(HEADER)))
             {
                 return new HEADER();
@@ -142,7 +143,7 @@ namespace IWAS
                     break;
 
                 byte[] msgBuf = pack.buf.Pop(msgSize);
-                HEADER msg = CreateIcdObject(head.msgSize);
+                HEADER msg = CreateIcdObject(head);
                 msg.Deserialize(ref msgBuf);
                 OnRecv?.Invoke(pack.ClientID, msg);
             }

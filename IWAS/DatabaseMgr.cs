@@ -279,6 +279,29 @@ namespace IWAS
             return ds.Tables["Chat"].Rows[0];
 
         }
+        public static DataRow PushNewChat(ICD.ChatRoomList info)
+        {
+            string sql = string.Format(
+                "INSERT INTO chat " +
+                "(time, creator, access, visitors) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}')",
+                info.msgTime,
+                info.msgUser,
+                info.body[0].access,
+                "");
+
+            MySqlCommand cmd = new MySqlCommand(sql, mConn);
+            cmd.ExecuteNonQuery();
+
+            sql = string.Format("SELECT * FROM chat WHERE time='{0}' AND creator='{1}'", info.msgTime, info.msgUser);
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Chat");
+
+            return ds.Tables["Chat"].Rows[0];
+
+        }
         public static DataRow PushNewChat(ICD.Chat info)
         {
             string sql = string.Format(
@@ -300,6 +323,17 @@ namespace IWAS
             adapter.Fill(ds, "Chat");
 
             return ds.Tables["Chat"].Rows[0];
+
+        }
+        public static void EditChatUsers(ICD.ChatRoomList info)
+        {
+            string sql = string.Format(
+                "UPDATE chat SET visitors='{0}' WHERE recordID={1} ",
+                info.body[0].ToStringUserList(),
+                info.body[0].recordID);
+
+            MySqlCommand cmd = new MySqlCommand(sql, mConn);
+            cmd.ExecuteNonQuery();
 
         }
         public static void EditChatUsers(ICD.Chat info)

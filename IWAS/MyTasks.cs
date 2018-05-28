@@ -117,6 +117,7 @@ namespace IWAS
                     break;
                 case ICD.DEF.CMD_ChatRoomInfo:
                     OnRecv_ChatInfo(obj);
+                    asdf
                     break;
                 case ICD.DEF.CMD_AlarmChat:
                     OnRecv_AlarmChat(obj);
@@ -145,6 +146,7 @@ namespace IWAS
             }
 
             ICD.Chat msg = (ICD.Chat)obj;
+
             mChats[msg.recordID] = msg;
             UpdateChatList();
         }

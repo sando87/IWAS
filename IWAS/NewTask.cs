@@ -21,16 +21,19 @@ namespace IWAS
         {
             if(cbType.Text == "채팅")
             {
-                ICD.Chat msgNewChat = new ICD.Chat();
-                msgNewChat.FillClientHeader(ICD.DEF.CMD_NewChat);
-                msgNewChat.access = cbAccess.Text;
+                ICD.ChatRoomList msgNewChat = new ICD.ChatRoomList();
+                msgNewChat.FillClientHeader(ICD.DEF.CMD_NewChat, 0);
+                msgNewChat.body[0].access = cbAccess.Text;
                 if(btnDirector.Text == btnWorker.Text)
                 {
-                    msgNewChat.info = btnDirector.Text;
+                    msgNewChat.body[0].users = new string[1];
+                    msgNewChat.body[0].users[0] = btnDirector.Text;
                 }
                 else
                 {
-                    msgNewChat.info = btnDirector.Text + "," + btnWorker.Text;
+                    msgNewChat.body[0].users = new string[2];
+                    msgNewChat.body[0].users[0] = btnDirector.Text;
+                    msgNewChat.body[0].users[1] = btnWorker.Text;
                 }
                 ICDPacketMgr.GetInst().sendMsgToServer(msgNewChat);
 

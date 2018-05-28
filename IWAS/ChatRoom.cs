@@ -98,6 +98,25 @@ namespace IWAS
             }
         }
 
+        public int ProcNewChat(ChatRoomList obj)
+        {
+            DataRow row = DatabaseMgr.PushNewChat(obj);
+            mRoomID = (int)row["recordID"];
+            mMessages.Clear();
+
+            foreach (var user in obj.body[0].users)
+            {
+                if (user.Length > 0)
+                    mUsers[user] = 0;
+            }
+
+            obj.body[0].recordID = mRoomID;
+            DatabaseMgr.EditChatUsers(obj);
+            BroadcastRoomInfo();
+
+            return mRoomID;
+        }
+
         public int ProcNewChat(Chat obj)
         {
             DataRow row = DatabaseMgr.PushNewChat(obj);
@@ -127,6 +146,25 @@ namespace IWAS
                 msg.info += String.Format("{0},", user.Key);
 
             MsgCtrl.GetInst().sendMsg(obj.msgUser, msg);
+        }
+
+        private void BroadcastRoomInfo()
+        {
+            ChatRoomList msg = new ICD.ChatRoomList();
+            msg.FillServerHeader(DEF.CMD_ChatRoomInfo, 0);
+            msg.body[0].recordID = mRoomID;
+            msg.body[0].users = new string[mUsers.Count];
+            for (int i=0; i<mUsers.Count; ++i)
+            {
+                msg.body[0].users[i] = mUsers.ElementAt(i).Key;
+            }
+
+            foreach (var user in mUsers)
+            {
+                msg.body[0].state = GetUserState(user.Key);
+                MsgCtrl.GetInst().sendMsg(user.Key, msg);
+            }
+
         }
 
         private void BroadcastChatUsers()

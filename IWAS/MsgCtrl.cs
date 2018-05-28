@@ -184,7 +184,7 @@ namespace IWAS
         private void ICD_NewChat(int clientID, HEADER obj)
         {
             ChatRoom room = new ChatRoom();
-            int chatID = room.ProcNewChat((Chat)obj);
+            int chatID = room.ProcNewChat((ChatRoomList)obj);
             mRooms[chatID] = room;
         }
 
