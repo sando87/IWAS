@@ -23,14 +23,12 @@ namespace IWAS
         }
 
         private int mRoomID;
-        private int mCntLoingUser;
         Dictionary<string, int> mUsers = new Dictionary<string, int>();//int값은 User의 현재 메세지 위치를 기억함
         List<MsgInfo> mMessages = new List<MsgInfo>();
 
         public void Init(int chatID)
         {
             mRoomID = chatID;
-            mCntLoingUser = 0;
 
             DataTable rowMsgs = DatabaseMgr.GetChatMessages(mRoomID);
             if(rowMsgs != null)
@@ -104,7 +102,6 @@ namespace IWAS
         {
             DataRow row = DatabaseMgr.PushNewChat(obj);
             mRoomID = (int)row["recordID"];
-            mCntLoingUser = 0;
             mMessages.Clear();
 
             string[] newUsers = obj.info.Split(',');
@@ -169,7 +166,7 @@ namespace IWAS
             {
                 if (mMessages[i].isSignaled)
                 {
-                    string chatInfo = String.Format("{0},{1},{2},{3},{4}\0",
+                    string chatInfo = String.Format("{0},{1},{2},{3},{4}\\",
                         mMessages[i].msgID,
                         mMessages[i].tick,
                         mMessages[i].time,
@@ -237,7 +234,7 @@ namespace IWAS
             item.msgID = msgID;
             item.time = obj.msgTime;
             item.user = obj.msgUser;
-            item.tick = mUsers.Count - mCntLoingUser;
+            item.tick = mUsers.Count - CountLoginUser();
             item.message = obj.info.Substring(0, obj.info.Length);
             item.isSignaled = true;
             mMessages.Add(item);
@@ -253,8 +250,6 @@ namespace IWAS
                 tmp.recordID = mRoomID;
                 tmp.info = GetUserList();
                 DatabaseMgr.EditChatUsers(tmp);
-
-                mCntLoingUser = CountLoginUser();
 
                 BroadcastChatUsers();
             }
@@ -281,7 +276,6 @@ namespace IWAS
                     mUsers[user] = mMessages.Count;
             }
 
-            mCntLoingUser = CountLoginUser();
             DatabaseMgr.EditChatUsers(obj);
             BroadcastChatUsers();
         }
@@ -289,13 +283,11 @@ namespace IWAS
         {
             int curCount = mUsers[obj.msgUser];
             mUsers[obj.msgUser] = -1;
-            mCntLoingUser = CountLoginUser();
-            int curTick = mUsers.Count - mCntLoingUser;
             int totalCount = mMessages.Count;
             for (int i=curCount; i< totalCount; ++i)
             {
                 mMessages[i].isSignaled = true;
-                mMessages[i].tick = curTick;
+                mMessages[i].tick = (mMessages[i].tick > 0) ? mMessages[i].tick - 1 : 0 ;
             }
             BroadcastSignaledMsgs();
         }
@@ -304,7 +296,6 @@ namespace IWAS
             if(mUsers.ContainsKey(obj.msgUser))
             {
                 mUsers[obj.msgUser] = mMessages.Count;
-                mCntLoingUser = CountLoginUser();
             }
         }
         public int GetUserState(string user)

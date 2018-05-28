@@ -118,11 +118,23 @@ namespace IWAS
                 case ICD.DEF.CMD_ChatRoomInfo:
                     OnRecv_ChatInfo(obj);
                     break;
+                case ICD.DEF.CMD_AlarmChat:
+                    OnRecv_AlarmChat(obj);
+                    break;
                 default:
                     break;
             }
         }
 
+        private void OnRecv_AlarmChat(ICD.HEADER obj)
+        {
+            ICD.Chat msg = (ICD.Chat)obj;
+            if(mChats.ContainsKey(msg.recordID))
+            {
+                mChats[msg.recordID].state = msg.state;
+                UpdateChatList();
+            }
+        }
 
         private void OnRecv_ChatInfo(ICD.HEADER obj)
         {
@@ -178,6 +190,8 @@ namespace IWAS
                 ListViewItem lvItem = items[0];
                 string strID = lvItem.SubItems[0].Text;
                 int chatID = int.Parse(strID);
+                mChats[chatID].state = 0;
+                lvItem.SubItems[2].Text = "0";
                 DlgChatRoom room = new DlgChatRoom(chatID);
                 room.ShowDialog();
             }

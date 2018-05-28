@@ -121,28 +121,31 @@ namespace IWAS
 
         private void procData(NetworkMgr.QueuePack pack)
         {
-            long nRecvLen = pack.buf.GetSize();
-            int headSize = ICD.HEADER.HeaderSize();
-            if (nRecvLen < headSize)
-                return;
-
-            byte[] headBuf = pack.buf.readSize(headSize);
-            HEADER head = new HEADER();
-            head.Deserialize(ref headBuf);
-            if (head.msgSOF != ICD.DEF.MAGIC_SOF)
+            while(true)
             {
-                pack.buf.Clear();
-                return;
+                long nRecvLen = pack.buf.GetSize();
+                int headSize = ICD.HEADER.HeaderSize();
+                if (nRecvLen < headSize)
+                    break;
+
+                byte[] headBuf = pack.buf.readSize(headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+                if (head.msgSOF != ICD.DEF.MAGIC_SOF)
+                {
+                    pack.buf.Clear();
+                    break;
+                }
+
+                int msgSize = head.msgSize;
+                if (nRecvLen < msgSize)
+                    break;
+
+                byte[] msgBuf = pack.buf.Pop(msgSize);
+                HEADER msg = CreateIcdObject(head.msgSize);
+                msg.Deserialize(ref msgBuf);
+                OnRecv?.Invoke(pack.ClientID, msg);
             }
-
-            int msgSize = head.msgSize;
-            if (nRecvLen < msgSize)
-                return;
-
-            byte[] msgBuf = pack.buf.Pop(msgSize);
-            HEADER msg = CreateIcdObject(head.msgSize);
-            msg.Deserialize(ref msgBuf);
-            OnRecv?.Invoke(pack.ClientID, msg);
         }
 
         public void sendMsgToServer(ICD.HEADER obj)

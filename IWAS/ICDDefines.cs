@@ -56,7 +56,7 @@ namespace IWAS
             
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class HEADER
         {
             [MarshalAs(UnmanagedType.I4)] public int msgSOF;
@@ -129,7 +129,7 @@ namespace IWAS
 
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class User : HEADER
         {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
@@ -139,7 +139,7 @@ namespace IWAS
 
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Task : HEADER
         {
             [MarshalAs(UnmanagedType.I4)] public int recordID;
@@ -178,7 +178,7 @@ namespace IWAS
 
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class TaskEdit : HEADER
         {
             [MarshalAs(UnmanagedType.I4)] public int recordID;
@@ -188,7 +188,7 @@ namespace IWAS
 
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Chat : HEADER
         {
             [MarshalAs(UnmanagedType.I4)] public int recordID;
@@ -265,7 +265,7 @@ namespace IWAS
             }
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class ChatMsg
         {
             [MarshalAs(UnmanagedType.I4)] public int msgID;
@@ -277,7 +277,7 @@ namespace IWAS
             public string message;
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class File : HEADER
         {
             [MarshalAs(UnmanagedType.I4)] public int recordID;
@@ -300,7 +300,7 @@ namespace IWAS
 
         }
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Message : HEADER
         {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]

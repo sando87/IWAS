@@ -57,9 +57,9 @@ namespace IWAS
             lvMsg.Columns.Add("id");
             lvMsg.Columns[0].Width = 50;
             lvMsg.Columns.Add("user");
-            lvMsg.Columns[1].Width = 50;
+            lvMsg.Columns[1].Width = 100;
             lvMsg.Columns.Add("message");
-            lvMsg.Columns[2].Width = 200;
+            lvMsg.Columns[2].Width = 100;
             lvMsg.Columns.Add("state");
             lvMsg.Columns[3].Width = 50;
         }
@@ -72,6 +72,7 @@ namespace IWAS
                 if (val.isSignaled == false)
                     break;
 
+                val.isSignaled = false;
                 if (val.index >= lvMsg.Items.Count)
                 {
                     string[] infos = new string[4];
@@ -112,23 +113,31 @@ namespace IWAS
 
         private void ProcMsgList(Chat msg)
         {
-            string[] chatMsgs = msg.info.Split('\0');
+            string[] chatMsgs = msg.info.Split('\\');
             foreach(string chat in chatMsgs.Reverse())
             {
                 if (chat.Length == 0)
                     continue;
 
                 string[] infos = chat.Split(',', (char)5);
-                ChatRoom.MsgInfo item = new ChatRoom.MsgInfo();
-                item.msgID = int.Parse(infos[0]);
-                item.tick = int.Parse(infos[1]);
-                item.time = infos[2];
-                item.user = infos[3];
-                item.message = infos[4];
-                item.isSignaled = true;
-                item.index = mMsgList.Count;
-
-                mMsgList[item.msgID] = item;
+                int msgID = int.Parse(infos[0]);
+                if (mMsgList.ContainsKey(msgID))
+                {
+                    mMsgList[msgID].tick = int.Parse(infos[1]);
+                    mMsgList[msgID].isSignaled = true;
+                }
+                else
+                {
+                    ChatRoom.MsgInfo item = new ChatRoom.MsgInfo();
+                    item.msgID = int.Parse(infos[0]);
+                    item.tick = int.Parse(infos[1]);
+                    item.time = infos[2];
+                    item.user = infos[3];
+                    item.message = infos[4];
+                    item.isSignaled = true;
+                    item.index = mMsgList.Count;
+                    mMsgList[item.msgID] = item;
+                }
             }
             UpdateMsgListView();
         }
