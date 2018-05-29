@@ -44,7 +44,14 @@ namespace IWAS
         private HEADER CreateIcdObject(HEADER head)
         {
             int msgSize = head.msgSize;
-            if (msgSize == Marshal.SizeOf(typeof(HEADER)))
+            if((head.msgID/10) == 2) //ID가 20~29이면
+            {
+                if (head.msgID == DEF.CMD_ChatRoomList)
+                    return new ChatRoomList(1);
+                else
+                    return new ChatRoomInfo();
+            }
+            else if (msgSize == Marshal.SizeOf(typeof(HEADER)))
             {
                 return new HEADER();
             }
@@ -59,10 +66,6 @@ namespace IWAS
             else if (msgSize == Marshal.SizeOf(typeof(TaskEdit)))
             {
                 return new TaskEdit();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(Chat)))
-            {
-                return new Chat();
             }
             else if (msgSize == Marshal.SizeOf(typeof(File)))
             {

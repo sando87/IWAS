@@ -31,7 +31,7 @@ namespace IWAS
             mRoomID = chatID;
 
             DataTable rowMsgs = DatabaseMgr.GetChatMessages(mRoomID);
-            if(rowMsgs != null)
+            if (rowMsgs != null)
             {
                 foreach (DataRow item in rowMsgs.Rows)
                 {
@@ -56,20 +56,20 @@ namespace IWAS
             string[] users = visitors.Split(',');
             foreach (string user in users)
             {
-                if(user.Length > 0)
+                if (user.Length > 0)
                     mUsers[user] = cntMessages;
             }
 
         }
-        public void ProcChat(Chat obj)
+        public void ProcChat(ChatRoomInfo obj)
         {
-            if( !mUsers.ContainsKey(obj.msgUser) )
+            if (!mUsers.ContainsKey(obj.msgUser))
             {
                 LOG.warn();
                 return;
             }
 
-            switch(obj.msgID)
+            switch (obj.msgID)
             {
                 case DEF.CMD_ChatMsg:
                     ProcMessage(obj);
@@ -77,10 +77,10 @@ namespace IWAS
                 case DEF.CMD_ChatMsgAll:
                     ProcMessageAll(obj);
                     break;
-                case DEF.CMD_SetChatUsers:
-                    ProcSetUsers(obj);
+                case DEF.CMD_AddChatUsers:
+                    ProcAddUsers(obj);
                     break;
-                case DEF.CMD_DelChatUser:
+                case DEF.CMD_DelChatUsers:
                     ProcDelUser(obj);
                     break;
                 case DEF.CMD_ShowChat:
@@ -90,7 +90,7 @@ namespace IWAS
                     ProcOutUser(obj);
                     break;
                 case DEF.CMD_ChatRoomInfo:
-                    ProcUserList(obj);
+                    ProcRoomInfo(obj);
                     break;
                 default:
                     LOG.warn();
@@ -98,86 +98,71 @@ namespace IWAS
             }
         }
 
-        public int ProcNewChat(ChatRoomList obj)
+        public int ProcNewChat(ChatRoomInfo obj)
         {
             DataRow row = DatabaseMgr.PushNewChat(obj);
             mRoomID = (int)row["recordID"];
             mMessages.Clear();
 
-            foreach (var user in obj.body[0].users)
+            foreach (var user in obj.body.users)
             {
-                if (user.Length > 0)
-                    mUsers[user] = 0;
+                mUsers[user] = 0;
             }
 
-            obj.body[0].recordID = mRoomID;
-            DatabaseMgr.EditChatUsers(obj);
-            BroadcastRoomInfo();
+            ChatRoomInfo msg = GetRoomInfo();
+            DatabaseMgr.EditChatUsers(msg);
+            BroadcastRoomInfo(msg);
 
             return mRoomID;
         }
 
-        public int ProcNewChat(Chat obj)
+        private void ProcRoomInfo(ChatRoomInfo obj)
         {
-            DataRow row = DatabaseMgr.PushNewChat(obj);
-            mRoomID = (int)row["recordID"];
-            mMessages.Clear();
-
-            string[] newUsers = obj.info.Split(',');
-            foreach (var user in newUsers)
-            {
-                if (user.Length > 0)
-                    mUsers[user] = 0;
-            }
-
-            obj.recordID = mRoomID;
-            DatabaseMgr.EditChatUsers(obj);
-            BroadcastChatUsers();
-
-            return mRoomID;
-        }
-        private void ProcUserList(Chat obj)
-        {
-            Chat msg = new Chat();
-            msg.FillServerHeader(DEF.CMD_ChatRoomInfo);
-            msg.recordID = mRoomID;
-            msg.state = GetUserState(obj.msgUser);
-            foreach (var user in mUsers)
-                msg.info += String.Format("{0},", user.Key);
-
+            ChatRoomInfo msg = GetRoomInfo();
+            msg.body.state = GetUserState(obj.msgUser);
             MsgCtrl.GetInst().sendMsg(obj.msgUser, msg);
         }
 
-        private void BroadcastRoomInfo()
+        public ChatRoomInfo GetRoomInfo(bool isAll = false)
         {
-            ChatRoomList msg = new ICD.ChatRoomList();
+            ChatRoomInfo msg = new ChatRoomInfo();
             msg.FillServerHeader(DEF.CMD_ChatRoomInfo, 0);
-            msg.body[0].recordID = mRoomID;
-            msg.body[0].users = new string[mUsers.Count];
-            for (int i=0; i<mUsers.Count; ++i)
+
+            RoomInfo room = msg.body;
+            room.recordID = mRoomID;
+            room.users = new string[mUsers.Count];
+            for (int i = 0; i < mUsers.Count; ++i)
             {
-                msg.body[0].users[i] = mUsers.ElementAt(i).Key;
+                room.users[i] = mUsers.ElementAt(i).Key;
             }
 
-            foreach (var user in mUsers)
+            List<MesgInfo> vecMsgs = new List<MesgInfo>();
+            int cnt = mMessages.Count;
+            for (int i = cnt - 1; i >= 0; --i)
             {
-                msg.body[0].state = GetUserState(user.Key);
-                MsgCtrl.GetInst().sendMsg(user.Key, msg);
+                if (!isAll && !mMessages[i].isSignaled)
+                    break;
+
+                MesgInfo mesg = new MesgInfo();
+                mesg.recordID = mMessages[i].msgID;
+                mesg.tick = mMessages[i].tick;
+                mesg.time = mMessages[i].time;
+                mesg.user = mMessages[i].user;
+                mesg.message = mMessages[i].message;
+
+                vecMsgs.Add(mesg);
+                mMessages[i].isSignaled = false;
             }
 
+            room.mesgs = vecMsgs.ToArray();
+            return msg;
         }
 
-        private void BroadcastChatUsers()
+        private void BroadcastRoomInfo(ChatRoomInfo msg)
         {
-            Chat msg = new ICD.Chat();
-            msg.FillServerHeader(DEF.CMD_ChatRoomInfo);
-            msg.recordID = mRoomID;
-            foreach (var user in mUsers)
-                msg.info += String.Format("{0},",user.Key);
-
             foreach (var user in mUsers)
             {
-                msg.state = GetUserState(user.Key);
+                msg.body.state = GetUserState(user.Key);
                 MsgCtrl.GetInst().sendMsg(user.Key, msg);
             }
         }
@@ -185,7 +170,7 @@ namespace IWAS
         private int CountLoginUser()
         {
             int ret = 0;
-            foreach(var item in mUsers)
+            foreach (var item in mUsers)
             {
                 if (item.Value == -1)
                     ret++;
@@ -193,78 +178,15 @@ namespace IWAS
             return ret;
         }
 
-        private void BroadcastSignaledMsgs()
+
+        private void ProcMessageAll(ChatRoomInfo obj)
         {
-            Chat msg = new ICD.Chat();
-            msg.FillServerHeader(DEF.CMD_ChatMsgList);
-            msg.recordID = mRoomID;
-            msg.info = "";
-            int cnt = mMessages.Count;
-            for(int i=cnt-1; i>=0; --i)
-            {
-                if (mMessages[i].isSignaled)
-                {
-                    string chatInfo = String.Format("{0},{1},{2},{3},{4}\\",
-                        mMessages[i].msgID,
-                        mMessages[i].tick,
-                        mMessages[i].time,
-                        mMessages[i].user,
-                        mMessages[i].message);
-
-                    msg.info += chatInfo;
-                    mMessages[i].isSignaled = false;
-                }
-                else
-                    break;
-            }
-
-            if(msg.info.Length >= 260)
-            {
-                LOG.warn();
-                return;
-            }
-
-            int msgCount = mMessages.Count;
-            foreach(var user in mUsers)
-            {
-                if(user.Value == -1) //user가 채팅방 창을 보고있는 상태
-                {
-                    msg.msgID = DEF.CMD_ChatMsgList;
-                    msg.state = 0;
-                    MsgCtrl.GetInst().sendMsg(user.Key, msg);
-                }
-                else//user가 채팅방 창을 안보는 상태는 알람 message 전송
-                {
-                    msg.msgID = DEF.CMD_AlarmChat;
-                    msg.state = msgCount - user.Value;
-                    MsgCtrl.GetInst().sendMsg(user.Key, msg);
-                }
-                
-            }
+            ChatRoomInfo msg = GetRoomInfo(true);
+            msg.body.state = GetUserState(obj.msgUser);
+            MsgCtrl.GetInst().sendMsg(obj.msgUser, msg);
         }
 
-        private void ProcMessageAll(Chat obj)
-        {
-            Chat msg = new ICD.Chat();
-            msg.FillServerHeader(DEF.CMD_ChatMsgList);
-            msg.recordID = mRoomID;
-
-            foreach (var item in mMessages)
-            {
-                string chatInfo = String.Format("{0},{1},{2},{3},{4}\0",
-                    item.msgID,
-                    item.tick,
-                    item.time,
-                    item.user,
-                    item.message);
-
-                msg.info = chatInfo;
-
-                MsgCtrl.GetInst().sendMsg(obj.msgUser, msg);
-            }
-        }
-
-        private void ProcMessage(Chat obj)
+        private void ProcMessage(ChatRoomInfo obj)
         {
             DataRow row = DatabaseMgr.PushChatMessage(obj);
             int msgID = (int)row["recordID"];
@@ -273,69 +195,80 @@ namespace IWAS
             item.time = obj.msgTime;
             item.user = obj.msgUser;
             item.tick = mUsers.Count - CountLoginUser();
-            item.message = obj.info.Substring(0, obj.info.Length);
+            item.message = obj.body.mesgs[0].message;
             item.isSignaled = true;
             mMessages.Add(item);
-            BroadcastSignaledMsgs();
+
+            ChatRoomInfo msg = GetRoomInfo();
+            BroadcastRoomInfo(msg);
         }
-        private void ProcDelUser(Chat obj)
+
+        private void UpdateTick(string user)
         {
-            if (mUsers.ContainsKey(obj.info))
-            {
-                mUsers.Remove(obj.info);
+            int curCount = mUsers[user];
+            if(curCount < 0)
+                return;
 
-                Chat tmp = new Chat();
-                tmp.recordID = mRoomID;
-                tmp.info = GetUserList();
-                DatabaseMgr.EditChatUsers(tmp);
-
-                BroadcastChatUsers();
-            }
-        }
-        private void ProcSetUsers(Chat obj)
-        {
-            foreach(var item in mUsers)
-            {
-                if( !obj.info.Contains(item.Key) )
-                {
-                    Chat msg = new Chat();
-                    msg.FillServerHeader(DEF.CMD_DelChatUser);
-                    msg.recordID = mRoomID;
-                    MsgCtrl.GetInst().sendMsg(item.Key, msg);
-
-                    mUsers.Remove(item.Key);
-                }
-            }
-
-            string[] newUsers = obj.info.Split(',');
-            foreach (var user in newUsers)
-            {
-                if (user.Length > 0 && !mUsers.ContainsKey(user))
-                    mUsers[user] = mMessages.Count;
-            }
-
-            DatabaseMgr.EditChatUsers(obj);
-            BroadcastChatUsers();
-        }
-        private void ProcInUser(Chat obj)
-        {
-            int curCount = mUsers[obj.msgUser];
-            mUsers[obj.msgUser] = -1;
+            mUsers[user] = -1;
             int totalCount = mMessages.Count;
-            for (int i=curCount; i< totalCount; ++i)
+            for (int i = curCount; i < totalCount; ++i)
             {
                 mMessages[i].isSignaled = true;
-                mMessages[i].tick = (mMessages[i].tick > 0) ? mMessages[i].tick - 1 : 0 ;
+                mMessages[i].tick = (mMessages[i].tick > 0) ? mMessages[i].tick - 1 : 0;
             }
-            BroadcastSignaledMsgs();
         }
-        private void ProcOutUser(Chat obj)
+
+        private void ProcDelUser(ChatRoomInfo obj)
+        {
+            foreach(string name in obj.body.users)
+            {
+                if (!mUsers.ContainsKey(name))
+                    continue;
+
+                UpdateTick(name);
+                mUsers.Remove(name);
+
+                ChatRoomInfo msg = new ChatRoomInfo();
+                msg.FillServerHeader(DEF.CMD_DelChatUsers, 0);
+                msg.body.recordID = mRoomID;
+                MsgCtrl.GetInst().sendMsg(name, msg);
+            }
+
+            ChatRoomInfo tmp = GetRoomInfo();
+            DatabaseMgr.EditChatUsers(tmp);
+            BroadcastRoomInfo(tmp);
+        }
+
+        private void ProcAddUsers(ChatRoomInfo obj)
+        {
+            foreach (string name in obj.body.users)
+            {
+                if (mUsers.ContainsKey(name))
+                    continue;
+
+                mUsers[name] = mMessages.Count;
+            }
+
+            ChatRoomInfo tmp = GetRoomInfo();
+            DatabaseMgr.EditChatUsers(tmp);
+            BroadcastRoomInfo(tmp);
+        }
+
+        private void ProcInUser(ChatRoomInfo obj)
+        {
+            UpdateTick(obj.msgUser);
+            ChatRoomInfo msg = GetRoomInfo();
+            BroadcastRoomInfo(msg);
+        }
+
+        private void ProcOutUser(ChatRoomInfo obj)
         {
             if(mUsers.ContainsKey(obj.msgUser))
             {
                 mUsers[obj.msgUser] = mMessages.Count;
             }
         }
+
         public int GetUserState(string user)
         {
             if( !mUsers.ContainsKey(user) )

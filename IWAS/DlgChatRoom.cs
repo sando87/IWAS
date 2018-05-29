@@ -14,6 +14,7 @@ namespace IWAS
     public partial class DlgChatRoom : Form
     {
         private int mRoomID = 0;
+        string[] mUsers = null;
         Dictionary<int, ChatRoom.MsgInfo> mMsgList = new Dictionary<int, ChatRoom.MsgInfo>();
 
         public DlgChatRoom(int id)
@@ -30,20 +31,20 @@ namespace IWAS
             FormClosed += delegate {
                 ICDPacketMgr.GetInst().OnRecv -= OnProcChatRoom;
 
-                Chat msgOut = new Chat();
-                msgOut.FillClientHeader(DEF.CMD_HideChat);
-                msgOut.recordID = mRoomID;
+                ChatRoomInfo msgOut = new ChatRoomInfo();
+                msgOut.FillClientHeader(DEF.CMD_HideChat, 0);
+                msgOut.body.recordID = mRoomID;
                 ICDPacketMgr.GetInst().sendMsgToServer(msgOut);
             };
 
-            Chat msgAll = new Chat();
-            msgAll.FillClientHeader(DEF.CMD_ChatMsgAll);
-            msgAll.recordID = mRoomID;
+            ChatRoomInfo msgAll = new ChatRoomInfo();
+            msgAll.FillClientHeader(DEF.CMD_ChatMsgAll, 0);
+            msgAll.body.recordID = mRoomID;
             ICDPacketMgr.GetInst().sendMsgToServer(msgAll);
 
-            Chat msgIn = new Chat();
-            msgIn.FillClientHeader(DEF.CMD_ShowChat);
-            msgIn.recordID = mRoomID;
+            ChatRoomInfo msgIn = new ChatRoomInfo();
+            msgIn.FillClientHeader(DEF.CMD_ShowChat, 0);
+            msgIn.body.recordID = mRoomID;
             ICDPacketMgr.GetInst().sendMsgToServer(msgIn);
 
         }
@@ -96,13 +97,13 @@ namespace IWAS
 
         private void OnProcChatRoom(int clientID, ICD.HEADER obj)
         {
-            ICD.Chat msg = (ICD.Chat)obj;
+            ICD.ChatRoomInfo msg = (ICD.ChatRoomInfo)obj;
             switch (msg.msgID)
             {
-                case ICD.DEF.CMD_ChatMsgList:
+                case ICD.DEF.CMD_ChatRoomInfo:
                     ProcMsgList(msg);
                     break;
-                case ICD.DEF.CMD_DelChatUser:
+                case ICD.DEF.CMD_DelChatUsers:
                     ProcDelUser(msg);
                     break;
                 default:
@@ -111,29 +112,29 @@ namespace IWAS
         }
 
 
-        private void ProcMsgList(Chat msg)
+        private void ProcMsgList(ChatRoomInfo msg)
         {
-            string[] chatMsgs = msg.info.Split('\\');
-            foreach(string chat in chatMsgs.Reverse())
-            {
-                if (chat.Length == 0)
-                    continue;
+            mUsers = msg.body.users;
 
-                string[] infos = chat.Split(',', (char)5);
-                int msgID = int.Parse(infos[0]);
+            if (msg.body.mesgs == null)
+                return;
+
+            foreach(var chat in msg.body.mesgs.Reverse())
+            {
+                int msgID = chat.recordID;
                 if (mMsgList.ContainsKey(msgID))
                 {
-                    mMsgList[msgID].tick = int.Parse(infos[1]);
+                    mMsgList[msgID].tick = chat.tick;
                     mMsgList[msgID].isSignaled = true;
                 }
                 else
                 {
                     ChatRoom.MsgInfo item = new ChatRoom.MsgInfo();
-                    item.msgID = int.Parse(infos[0]);
-                    item.tick = int.Parse(infos[1]);
-                    item.time = infos[2];
-                    item.user = infos[3];
-                    item.message = infos[4];
+                    item.msgID = chat.recordID;
+                    item.tick = chat.tick;
+                    item.time = chat.time;
+                    item.user = chat.user;
+                    item.message = chat.message;
                     item.isSignaled = true;
                     item.index = mMsgList.Count;
                     mMsgList[item.msgID] = item;
@@ -142,7 +143,7 @@ namespace IWAS
             UpdateMsgListView();
         }
 
-        private void ProcDelUser(Chat msg)
+        private void ProcDelUser(ChatRoomInfo msg)
         {
             mMsgList.Clear();
             lvMsg.Clear();
@@ -154,10 +155,11 @@ namespace IWAS
             if (tbMsg.Text.Length == 0)
                 return;
 
-            Chat msg = new Chat();
-            msg.FillClientHeader(DEF.CMD_ChatMsg);
-            msg.recordID = mRoomID;
-            msg.info = tbMsg.Text;
+            ChatRoomInfo msg = new ChatRoomInfo();
+            msg.FillClientHeader(DEF.CMD_ChatMsg, 0);
+            msg.body.recordID = mRoomID;
+            msg.body.mesgs = new MesgInfo[1];
+            msg.body.mesgs[0].message = tbMsg.Text;
 
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
             tbMsg.Text = "";
@@ -165,16 +167,53 @@ namespace IWAS
 
         private void btnUser_Click(object sender, EventArgs e)
         {
-            DlgEditChatUsers dlg = new DlgEditChatUsers(mRoomID);
+            DlgEditChatUsers dlg = new DlgEditChatUsers(mRoomID, mUsers);
             dlg.ShowDialog();
+
+            string[] pre = mUsers;
+            string[] after = dlg.mChatNewList;
+
+            {
+                ChatRoomInfo msg = new ChatRoomInfo();
+                msg.FillClientHeader(DEF.CMD_DelChatUsers, 0);
+                msg.body.recordID = mRoomID;
+                List<string> oldUsers = new List<string>();
+                foreach (string item in pre)
+                {
+                    if (!after.Contains(item))
+                    {
+                        oldUsers.Add(item);
+                    }
+                }
+                msg.body.users = oldUsers.ToArray();
+                ICDPacketMgr.GetInst().sendMsgToServer(msg);
+            }
+
+            {
+                ChatRoomInfo msg = new ChatRoomInfo();
+                msg.FillClientHeader(DEF.CMD_AddChatUsers, 0);
+                msg.body.recordID = mRoomID;
+                List<string> newUsers = new List<string>();
+                foreach(string item in after)
+                {
+                    if(!pre.Contains(item))
+                    {
+                        newUsers.Add(item);
+                    }
+                }
+                msg.body.users = newUsers.ToArray();
+                ICDPacketMgr.GetInst().sendMsgToServer(msg);
+            }
+
         }
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            Chat msg = new Chat();
-            msg.FillClientHeader(DEF.CMD_DelChatUser);
-            msg.recordID = mRoomID;
-            msg.info = MyInfo.mMyInfo.userID;
+            ChatRoomInfo msg = new ChatRoomInfo();
+            msg.FillClientHeader(DEF.CMD_DelChatUsers, 0);
+            msg.body.recordID = mRoomID;
+            msg.body.users = new string[1];
+            msg.body.users[0] = MyInfo.mMyInfo.userID;
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
             Close();
         }

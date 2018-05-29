@@ -15,31 +15,32 @@ namespace IWAS
     public partial class DlgEditChatUsers : Form
     {
         private int mRoomID = 0;
-        public DlgEditChatUsers(int id)
+        private string[] mChatUserList = null;
+        public string[] mChatNewList = null;
+        public DlgEditChatUsers(int id, string[] users)
         {
             InitializeComponent();
             mRoomID = id;
+            mChatUserList = users;
         }
 
         private void DlgEditChatUsers_Load(object sender, EventArgs e)
         {
             InitListViews();
-
-            ICDPacketMgr.GetInst().OnRecv += OnProcChatUsers;
-            FormClosed += delegate {
-                ICDPacketMgr.GetInst().OnRecv -= OnProcChatUsers;
-            };
-
-            Chat msgUser = new Chat();
-            msgUser.FillClientHeader(DEF.CMD_ChatRoomInfo);
-            msgUser.recordID = mRoomID;
-            ICDPacketMgr.GetInst().sendMsgToServer(msgUser);
-
-            ICD.HEADER msgAll = new ICD.HEADER();
-            msgAll.FillClientHeader(ICD.DEF.CMD_UserList);
-            ICDPacketMgr.GetInst().sendMsgToServer(msgAll);
+            InitUserData();
         }
 
+        private void InitUserData()
+        {
+            foreach (string item in UserList.mUserList)
+                lvUserAll.Items.Add(item);
+
+            if (mChatUserList == null)
+                return;
+
+            foreach (string name in mChatUserList)
+                lvCurUsers.Items.Add(name);
+        }
         private void InitListViews()
         {
             lvUserAll.View = View.Details;
@@ -56,34 +57,6 @@ namespace IWAS
             lvCurUsers.Columns.Add("name");
             lvCurUsers.Columns[0].Width = 300;
 
-        }
-
-        private void OnProcChatUsers(int clientID, ICD.HEADER obj)
-        {
-            if (obj.msgID == DEF.CMD_ChatRoomInfo)
-            {
-                Chat msg = (Chat)obj;
-                string[] infos = msg.info.Split(',');
-                foreach (string info in infos)
-                {
-                    if (info.Length > 0)
-                    {
-                        lvCurUsers.Items.Add(info);
-                    }
-                }
-            }
-            else if (obj.msgID == DEF.CMD_UserList)
-            {
-                ICD.Message msg = (ICD.Message)obj;
-                string[] infos = msg.message.Split(',');
-                foreach (string info in infos)
-                {
-                    if (info.Length > 0)
-                    {
-                        lvUserAll.Items.Add(info);
-                    }
-                }
-            }
         }
 
         private void btnAdd_Click(object sender, EventArgs e)
@@ -109,19 +82,12 @@ namespace IWAS
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            string users = "";
             int cnt = lvCurUsers.Items.Count;
+            mChatNewList = new string[cnt];
             for (int i = 0; i < cnt; i++)
             {
-                users += lvCurUsers.Items[i].SubItems[0].Text;
-                users += ",";
+                mChatNewList[i] = lvCurUsers.Items[i].SubItems[0].Text;
             }
-
-            Chat msg = new Chat();
-            msg.FillClientHeader(DEF.CMD_SetChatUsers);
-            msg.recordID = mRoomID;
-            msg.info = users;
-            ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
 
         private void AddUser(string user)

@@ -30,18 +30,17 @@ namespace IWAS
             public const int CMD_LogMessage     = 14;
             public const int CMD_Search         = 15;
 
-            public const int CMD_NewChat        = 16;
-            public const int CMD_ChatMsg        = 17;
-            public const int CMD_SetChatUsers   = 18;
-            public const int CMD_DelChatUser    = 19;
-            public const int CMD_ShowChat       = 20;
-            public const int CMD_HideChat       = 21;
-            public const int CMD_ChatMsgList    = 22;
-            public const int CMD_ChatRoomInfo   = 23;
-            public const int CMD_ChatRoomList   = 24;
-            public const int CMD_AlarmChat      = 25;
-            public const int CMD_ChatMsgAll     = 26;
-            public const int CMD_MAX_COUNT      = 27;
+            public const int CMD_NewChat        = 20;
+            public const int CMD_ChatMsg        = 21;
+            public const int CMD_AddChatUsers   = 22;
+            public const int CMD_DelChatUsers   = 23;
+            public const int CMD_ShowChat       = 24;
+            public const int CMD_HideChat       = 25;
+            public const int CMD_ChatRoomInfo   = 26;
+            public const int CMD_ChatRoomList   = 27;
+            public const int CMD_ChatMsgAll     = 28;
+
+            public const int CMD_MAX_COUNT      = 30;
 
             public const int TYPE_NONE = 0;
             public const int TYPE_REQ = 1;
@@ -205,7 +204,7 @@ namespace IWAS
             public string info;
 
         }
-
+        /*
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Chat : HEADER
         {
@@ -216,7 +215,7 @@ namespace IWAS
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string info;
         }
-
+        */
         public class ChatMsgs : HEADER
         {
             public int msgCount;
@@ -326,14 +325,65 @@ namespace IWAS
 
         }
 
+        public class ChatRoomInfo : HEADER
+        {
+            public RoomInfo body;
+            public ChatRoomInfo()
+            {
+                body = new RoomInfo();
+            }
+
+            public override byte[] Serialize()
+            {
+                List<byte> ary = new List<byte>();
+
+                byte[] bodyBuf = null;
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bf.Serialize(ms, body);
+                    bodyBuf = ms.ToArray();
+                }
+
+                HEADER head = Clone();
+                head.msgSize = HeaderSize() + bodyBuf.Length;
+                ary.AddRange(head.Serialize());
+                ary.AddRange(bodyBuf);
+
+                return ary.ToArray();
+            }
+
+            public override void Deserialize(ref byte[] data)
+            {
+                int headSize = HEADER.HeaderSize();
+                int bodySize = data.Length - headSize;
+
+                byte[] headBuf = new byte[headSize];
+                Array.Copy(data, 0, headBuf, 0, headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+
+                msgID = head.msgID;
+                msgSize = head.msgSize;
+                msgSOF = head.msgSOF;
+                msgType = head.msgType;
+                msgErr = head.msgErr;
+                msgUser = head.msgUser;
+                msgTime = head.msgTime;
+
+                byte[] bodyBuf = new byte[bodySize];
+                Array.Copy(data, headSize, bodyBuf, 0, bodySize);
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream(bodyBuf))
+                {
+                    body = (RoomInfo)bf.Deserialize(ms);
+                }
+            }
+        }
+
         public class ChatRoomList : HEADER
         {
             public RoomInfo[] body;
-            public ChatRoomList()
-            {
-                body = new RoomInfo[1];
-                body[0] = new RoomInfo();
-            }
             public ChatRoomList(int n)
             {
                 body = new RoomInfo[n];

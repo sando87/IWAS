@@ -13,7 +13,7 @@ namespace IWAS
 {
     public partial class MyTasks : Form
     {
-        static public Dictionary<int, ICD.Chat> mChats = new Dictionary<int, ICD.Chat>();
+        static public Dictionary<int, ICD.RoomInfo> mChats = new Dictionary<int, ICD.RoomInfo>();
         static public Dictionary<int, ICD.Task> mTasks = new Dictionary<int, ICD.Task>();
 
         public MyTasks()
@@ -81,7 +81,7 @@ namespace IWAS
         {
             lvChat.Items.Clear();
 
-            foreach (KeyValuePair<int, ICD.Chat> chat in mChats)
+            foreach (var chat in mChats)
             {
                 AddListView(chat.Value);
             }
@@ -95,11 +95,11 @@ namespace IWAS
             ListViewItem lvItems = new ListViewItem(infos);
             TaskList.Items.Add(lvItems);
         }
-        private void AddListView(ICD.Chat chat)
+        private void AddListView(ICD.RoomInfo chat)
         {
             string[] infos = new string[3];
             infos[0] = chat.recordID.ToString();
-            infos[1] = chat.info;
+            infos[1] = chat.ToStringUserList();
             infos[2] = chat.state.ToString();
 
             ListViewItem lvItems = new ListViewItem(infos);
@@ -115,39 +115,44 @@ namespace IWAS
                 case ICD.DEF.CMD_TaskInfo:
                     OnRecv_TaskInfo(obj);
                     break;
-                case ICD.DEF.CMD_ChatRoomInfo:
-                    OnRecv_ChatInfo(obj);
-                    asdf
+                case ICD.DEF.CMD_ChatRoomList:
+                    OnRecv_ChatList(obj);
                     break;
-                case ICD.DEF.CMD_AlarmChat:
-                    OnRecv_AlarmChat(obj);
+                case ICD.DEF.CMD_ChatRoomInfo:
+                    OnRecv_ChatRoomInfo(obj);
+                    break;
+                case ICD.DEF.CMD_DelChatUsers:
+                    OnRecv_DelChatUser(obj);
                     break;
                 default:
                     break;
             }
         }
 
-        private void OnRecv_AlarmChat(ICD.HEADER obj)
+        private void OnRecv_DelChatUser(ICD.HEADER obj)
         {
-            ICD.Chat msg = (ICD.Chat)obj;
-            if(mChats.ContainsKey(msg.recordID))
+            ICD.ChatRoomInfo msg = (ICD.ChatRoomInfo)obj;
+            if (mChats.ContainsKey(msg.body.recordID))
             {
-                mChats[msg.recordID].state = msg.state;
+                mChats.Remove(msg.body.recordID);
                 UpdateChatList();
             }
         }
 
-        private void OnRecv_ChatInfo(ICD.HEADER obj)
+        private void OnRecv_ChatRoomInfo(ICD.HEADER obj)
         {
-            if (ICD.DEF.ERR_NoError != obj.msgErr)
-            {
-                LOG.warn();
-                return;
-            }
+            ICD.ChatRoomInfo msg = (ICD.ChatRoomInfo)obj;
+            mChats[msg.body.recordID] = msg.body;
+            UpdateChatList();
+        }
 
-            ICD.Chat msg = (ICD.Chat)obj;
+        private void OnRecv_ChatList(ICD.HEADER obj)
+        {
+            ICD.ChatRoomList msg = (ICD.ChatRoomList)obj;
 
-            mChats[msg.recordID] = msg;
+            foreach(ICD.RoomInfo item in msg.body)
+                mChats[item.recordID] = item;
+
             UpdateChatList();
         }
 

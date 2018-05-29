@@ -35,7 +35,8 @@ namespace IWAS
 
             mFuncArray[DEF.CMD_NewChat] = ICD_NewChat;
             mFuncArray[DEF.CMD_ChatMsg] = ICD_ProcChat;
-            mFuncArray[DEF.CMD_SetChatUsers] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_AddChatUsers] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_DelChatUsers] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ShowChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_HideChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatMsgAll] = ICD_ProcChat;
@@ -184,37 +185,37 @@ namespace IWAS
         private void ICD_NewChat(int clientID, HEADER obj)
         {
             ChatRoom room = new ChatRoom();
-            int chatID = room.ProcNewChat((ChatRoomList)obj);
+            int chatID = room.ProcNewChat((ChatRoomInfo)obj);
             mRooms[chatID] = room;
         }
 
         private void ICD_ProcChat(int clientID, HEADER obj)
         {
-            Chat msg = (Chat)obj;
-            if( !mRooms.ContainsKey(msg.recordID) )
+            ChatRoomInfo msg = (ChatRoomInfo)obj;
+            if( !mRooms.ContainsKey(msg.body.recordID) )
             {
                 LOG.warn();
                 return;
             }
 
-            mRooms[msg.recordID].ProcChat(msg);
+            mRooms[msg.body.recordID].ProcChat(msg);
         }
 
         private void ICD_ChatRoomList(int clientID, HEADER obj)
         {
-            Chat msg = new Chat();
+            int i = 0;
+            ChatRoomList msg = new ChatRoomList(mRooms.Count);
+            msg.FillServerHeader(DEF.CMD_ChatRoomList, 0);
             foreach (var item in mRooms)
             {
-                int state = item.Value.GetUserState(obj.msgUser);
-                if(state != -1)
-                {
-                    msg.FillServerHeader(DEF.CMD_ChatRoomInfo);
-                    msg.recordID = item.Key;
-                    msg.state = state;
-                    msg.info = item.Value.GetUserList();
-                    sendMsg(obj.msgUser, msg);
-                }
+                msg.body[i] = new RoomInfo();
+                ChatRoomInfo room = item.Value.GetRoomInfo();
+                msg.body[i].recordID = room.body.recordID;
+                msg.body[i].state = item.Value.GetUserState(obj.msgUser);
+                msg.body[i].users = room.body.users;
+                i++;
             }
+            sendMsg(obj.msgUser, msg);
         }
         
         public void sendMsg(string user, HEADER obj)
