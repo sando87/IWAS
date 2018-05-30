@@ -203,19 +203,28 @@ namespace IWAS
 
         private void ICD_ChatRoomList(int clientID, HEADER obj)
         {
-            int i = 0;
-            ChatRoomList msg = new ChatRoomList(mRooms.Count);
-            msg.FillServerHeader(DEF.CMD_ChatRoomList, 0);
+            List<RoomInfo> vec = new List<RoomInfo>();
             foreach (var item in mRooms)
             {
-                msg.body[i] = new RoomInfo();
+                if (!item.Value.IsUser(obj.msgUser))
+                    continue;
+
+                RoomInfo info = new RoomInfo();
                 ChatRoomInfo room = item.Value.GetRoomInfo();
-                msg.body[i].recordID = room.body.recordID;
-                msg.body[i].state = item.Value.GetUserState(obj.msgUser);
-                msg.body[i].users = room.body.users;
-                i++;
+                info.recordID = room.body.recordID;
+                info.state = item.Value.GetUserState(obj.msgUser);
+                info.users = room.body.users;
+                vec.Add(info);
             }
-            sendMsg(obj.msgUser, msg);
+
+            if(vec.Count > 0)
+            {
+                ChatRoomList msg = new ChatRoomList(1);
+                msg.FillServerHeader(DEF.CMD_ChatRoomList, 0);
+                msg.body = vec.ToArray();
+                sendMsg(obj.msgUser, msg);
+            }
+            
         }
         
         public void sendMsg(string user, HEADER obj)

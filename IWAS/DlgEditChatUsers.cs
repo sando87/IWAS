@@ -88,6 +88,7 @@ namespace IWAS
             {
                 mChatNewList[i] = lvCurUsers.Items[i].SubItems[0].Text;
             }
+            Close();
         }
 
         private void AddUser(string user)

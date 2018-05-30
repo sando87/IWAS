@@ -61,11 +61,16 @@ namespace IWAS
             }
 
         }
+
+        public bool IsUser(string name)
+        {
+            return mUsers.ContainsKey(name);
+        }
+
         public void ProcChat(ChatRoomInfo obj)
         {
             if (!mUsers.ContainsKey(obj.msgUser))
             {
-                LOG.warn();
                 return;
             }
 
@@ -274,7 +279,7 @@ namespace IWAS
             if( !mUsers.ContainsKey(user) )
                 return -1;
 
-            return mMessages.Count - mUsers[user];
+            return (mUsers[user] == -1) ? 0 : (mMessages.Count - mUsers[user]);
         }
         public string GetUserList()
         {

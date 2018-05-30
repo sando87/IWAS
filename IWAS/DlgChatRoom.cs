@@ -65,33 +65,26 @@ namespace IWAS
             lvMsg.Columns[3].Width = 50;
         }
 
-        private void UpdateMsgListView()
+        private void UpdateMsgListView(int id)
         {
-            foreach(var msg in mMsgList.Reverse())
+            var msg = mMsgList[id];
+            if (msg.index >= lvMsg.Items.Count)
             {
-                var val = msg.Value;
-                if (val.isSignaled == false)
-                    break;
-
-                val.isSignaled = false;
-                if (val.index >= lvMsg.Items.Count)
-                {
-                    string[] infos = new string[4];
-                    infos[0] = val.msgID.ToString();
-                    infos[1] = val.user;
-                    infos[2] = val.message;
-                    infos[3] = val.tick.ToString();
-                    ListViewItem pack = new ListViewItem(infos);
-                    lvMsg.Items.Add(pack);
-                }
-                else
-                {
-                    var item = lvMsg.Items[val.index];
-                    item.SubItems[0].Text = val.msgID.ToString();
-                    item.SubItems[1].Text = val.user;
-                    item.SubItems[2].Text = val.message;
-                    item.SubItems[3].Text = val.tick.ToString();
-                }
+                string[] infos = new string[4];
+                infos[0] = msg.msgID.ToString();
+                infos[1] = msg.user;
+                infos[2] = msg.message;
+                infos[3] = msg.tick.ToString();
+                ListViewItem pack = new ListViewItem(infos);
+                lvMsg.Items.Add(pack);
+            }
+            else
+            {
+                var item = lvMsg.Items[msg.index];
+                item.SubItems[0].Text = msg.msgID.ToString();
+                item.SubItems[1].Text = msg.user;
+                item.SubItems[2].Text = msg.message;
+                item.SubItems[3].Text = msg.tick.ToString();
             }
         }
 
@@ -130,17 +123,18 @@ namespace IWAS
                 else
                 {
                     ChatRoom.MsgInfo item = new ChatRoom.MsgInfo();
-                    item.msgID = chat.recordID;
+                    item.msgID = msgID;
                     item.tick = chat.tick;
                     item.time = chat.time;
                     item.user = chat.user;
                     item.message = chat.message;
                     item.isSignaled = true;
                     item.index = mMsgList.Count;
-                    mMsgList[item.msgID] = item;
+                    mMsgList[msgID] = item;
                 }
+                UpdateMsgListView(msgID);
             }
-            UpdateMsgListView();
+            
         }
 
         private void ProcDelUser(ChatRoomInfo msg)
@@ -159,6 +153,7 @@ namespace IWAS
             msg.FillClientHeader(DEF.CMD_ChatMsg, 0);
             msg.body.recordID = mRoomID;
             msg.body.mesgs = new MesgInfo[1];
+            msg.body.mesgs[0] = new MesgInfo();
             msg.body.mesgs[0].message = tbMsg.Text;
 
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
@@ -169,6 +164,9 @@ namespace IWAS
         {
             DlgEditChatUsers dlg = new DlgEditChatUsers(mRoomID, mUsers);
             dlg.ShowDialog();
+
+            if (dlg.mChatNewList == null)
+                return;
 
             string[] pre = mUsers;
             string[] after = dlg.mChatNewList;

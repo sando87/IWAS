@@ -40,8 +40,8 @@ namespace IWAS
             msg.FillClientHeader(ICD.DEF.CMD_TaskList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
-            ICD.HEADER chatMsg = new ICD.HEADER();
-            chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList);
+            ICD.ChatRoomList chatMsg = new ICD.ChatRoomList(1);
+            chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList, 0);
             ICDPacketMgr.GetInst().sendMsgToServer(chatMsg);
         }
 
@@ -63,7 +63,7 @@ namespace IWAS
             lvChat.Columns.Add("id");
             lvChat.Columns[0].Width = 50;
             lvChat.Columns.Add("title");
-            lvChat.Columns[1].Width = 200;
+            lvChat.Columns[1].Width = 100;
             lvChat.Columns.Add("state");
             lvChat.Columns[2].Width = 100;
 
