@@ -98,14 +98,18 @@ namespace IWAS
             msg.taskID = mTask.recordID;
             msg.info = "";
 
-            if (tbTitle.Text != mTask.title)
-                msg.info += string.Format("title:{0},", tbTitle.Text);
-
-            if (tbComment.Text != mTask.comment)
-                msg.info += string.Format("comment:{0},", tbComment.Text);
-
-            if (tbLaunch.Text != mTask.preLaunch)
-                msg.info += string.Format("launch:{0},", tbLaunch.Text);
+            if (cbMainCate.Text != mTask.mainCategory) msg.info += string.Format("mainCate:{0},", cbMainCate.Text);
+            if (cbSubCate.Text != mTask.subCategory) msg.info += string.Format("subCate:{0},", cbSubCate.Text);
+            if (cbPriority.Text != mTask.priority) msg.info += string.Format("priority:{0},", cbPriority.Text);
+            if (cbAccess.Text != mTask.access) msg.info += string.Format("access:{0},", cbAccess.Text);
+            if (cbType.Text != mTask.kind) msg.info += string.Format("type:{0},", cbType.Text);
+            if (tbTitle.Text != mTask.title) msg.info += string.Format("title:{0},", tbTitle.Text);
+            if (tbComment.Text != mTask.comment) msg.info += string.Format("comment:{0},", tbComment.Text);
+            if (btnDirector.Text != mTask.director) msg.info += string.Format("director:{0},", btnDirector.Text);
+            if (btnWorker.Text != mTask.worker) msg.info += string.Format("worker:{0},", btnWorker.Text);
+            if (tbLaunch.Text != mTask.preLaunch) msg.info += string.Format("launch:{0},", tbLaunch.Text);
+            if (tbTerm.Text != mTask.preterm) msg.info += string.Format("term:{0},", tbTerm.Text);
+            if (tbDue.Text != mTask.preDue) msg.info += string.Format("term:{0},", tbDue.Text);
 
             if (msg.info.Length == 0)
             {

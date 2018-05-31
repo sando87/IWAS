@@ -15,6 +15,8 @@ namespace IWAS
         public NewTask()
         {
             InitializeComponent();
+            btnDirector.Text = MyInfo.mMyInfo.userID;
+            btnWorker.Text = MyInfo.mMyInfo.userID;
         }
 
         private void btnNewTask_Click(object sender, EventArgs e)

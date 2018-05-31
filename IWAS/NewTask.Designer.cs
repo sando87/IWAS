@@ -285,7 +285,7 @@
             this.btnDirector.Name = "btnDirector";
             this.btnDirector.Size = new System.Drawing.Size(100, 23);
             this.btnDirector.TabIndex = 4;
-            this.btnDirector.Text = "name";
+            this.btnDirector.Text = "button";
             this.btnDirector.UseVisualStyleBackColor = true;
             this.btnDirector.Click += new System.EventHandler(this.btnDirector_Click);
             // 
@@ -295,7 +295,7 @@
             this.btnWorker.Name = "btnWorker";
             this.btnWorker.Size = new System.Drawing.Size(100, 23);
             this.btnWorker.TabIndex = 4;
-            this.btnWorker.Text = "name";
+            this.btnWorker.Text = "button";
             this.btnWorker.UseVisualStyleBackColor = true;
             this.btnWorker.Click += new System.EventHandler(this.btnWorker_Click);
             // 
