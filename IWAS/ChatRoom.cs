@@ -23,8 +23,55 @@ namespace IWAS
         }
 
         private int mRoomID;
+        private string mAccess;
+        private string[] mTaskIDs;
         Dictionary<string, int> mUsers = new Dictionary<string, int>();//int값은 User의 현재 메세지 위치를 기억함
         List<MsgInfo> mMessages = new List<MsgInfo>();
+
+        private void UpdateUsersFromDB(int chatID)
+        {
+            mUsers.Clear();
+            DataTable rowMsgs = DatabaseMgr.GetChatUsers(mRoomID);
+            if (rowMsgs == null)
+                return;
+
+            foreach (DataRow item in rowMsgs.Rows)
+            {
+                if (item["type"].ToString() == "addUser")
+                {
+                    string user = item["info"].ToString();
+                    mUsers[user] = mMessages.Count;
+                }
+                else if (item["type"].ToString() == "delUser")
+                {
+                    string user = item["info"].ToString();
+                    mUsers.Remove(user);
+                }
+            }
+        }
+
+        private void UpdateTasksFromDB(int chatID)
+        {
+            mUsers.Clear();
+            DataTable rowMsgs = DatabaseMgr.GetChatTasks(mRoomID);
+            if (rowMsgs == null)
+                return;
+
+            string taskIDs = "";
+            foreach (DataRow item in rowMsgs.Rows)
+            {
+                if (item["type"].ToString() == "addTask")
+                {
+                    string user = item["info"].ToString();
+                    taskIDs += 
+                }
+                else if (item["type"].ToString() == "delTask")
+                {
+                    string user = item["info"].ToString();
+                    vec.Remove(user);
+                }
+            }
+        }
 
         public void Init(int chatID)
         {

@@ -443,6 +443,7 @@ namespace IWAS
             public int recordID;
             public int state;
             public string access;
+            public int[] taskIDs;
             public string[] users;
             public MesgInfo[] mesgs;
             public string ToStringUserList()

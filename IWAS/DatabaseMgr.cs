@@ -222,7 +222,33 @@ namespace IWAS
         public static DataTable GetChatMessages(int chatID)
         {
             string sql = string.Format(
-                "SELECT * FROM chatHistory WHERE chatID={0}", chatID);
+                "SELECT * FROM chatHistory WHERE chatID={0} AND type='msg'", chatID);
+            sql += " ORDER BY time ASC";
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if (adapter.Fill(ds, "ChatHis") == 0)
+                return null;
+
+            return ds.Tables["ChatHis"];
+        }
+        public static DataTable GetChatUsers(int chatID)
+        {
+            string sql = string.Format(
+                "SELECT * FROM chatHistory WHERE chatID={0} AND type LIKE '___User'", chatID);
+            sql += " ORDER BY time ASC";
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            if (adapter.Fill(ds, "ChatHis") == 0)
+                return null;
+
+            return ds.Tables["ChatHis"];
+        }
+        public static DataTable GetChatTasks(int chatID)
+        {
+            string sql = string.Format(
+                "SELECT * FROM chatHistory WHERE chatID={0} AND type LIKE '___Task'", chatID);
             sql += " ORDER BY time ASC";
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
@@ -255,6 +281,107 @@ namespace IWAS
 
             return ds.Tables["Chat"];
         }
+
+        public static DataRow PushNewChat(ICD.ChatRoomInfo info)
+        {
+            string sql = string.Format(
+                "INSERT INTO chat " +
+                "(time, creator, access) " +
+                "VALUES ('{0}', '{1}', '{2}')",
+                info.msgTime,
+                info.msgUser,
+                info.body.access);
+
+            MySqlCommand cmd = new MySqlCommand(sql, mConn);
+            cmd.ExecuteNonQuery();
+
+            sql = string.Format("SELECT * FROM chat WHERE time='{0}' AND creator='{1}'", info.msgTime, info.msgUser);
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Chat");
+
+            return ds.Tables["Chat"].Rows[0];
+
+        }
+
+        public static void AddChatUsers(ICD.ChatRoomInfo info)
+        {
+            foreach(var user in info.body.users)
+            {
+                string sql = string.Format(
+                    "INSERT INTO chatHistory " +
+                    "(chatID, time, user, type, info) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
+                    info.body.recordID,
+                    info.msgTime,
+                    info.msgUser,
+                    "addUser",
+                    user);
+
+                MySqlCommand cmd = new MySqlCommand(sql, mConn);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static void DelChatUsers(ICD.ChatRoomInfo info)
+        {
+            foreach (var user in info.body.users)
+            {
+                string sql = string.Format(
+                    "INSERT INTO chatHistory " +
+                    "(chatID, time, user, type, info) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
+                    info.body.recordID,
+                    info.msgTime,
+                    info.msgUser,
+                    "delUser",
+                    user);
+
+                MySqlCommand cmd = new MySqlCommand(sql, mConn);
+                cmd.ExecuteNonQuery();
+            }
+
+        }
+
+        public static void AddChatTasks(ICD.ChatRoomInfo info)
+        {
+            foreach (int id in info.body.taskIDs)
+            {
+                string sql = string.Format(
+                    "INSERT INTO chatHistory " +
+                    "(chatID, time, user, type, info) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
+                    info.body.recordID,
+                    info.msgTime,
+                    info.msgUser,
+                    "addTask",
+                    id);
+
+                MySqlCommand cmd = new MySqlCommand(sql, mConn);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public static void DelChatTasks(ICD.ChatRoomInfo info)
+        {
+            foreach(int id in info.body.taskIDs)
+            {
+                string sql = string.Format(
+                    "INSERT INTO chatHistory " +
+                    "(chatID, time, user, type, info) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}')",
+                    info.body.recordID,
+                    info.msgTime,
+                    info.msgUser,
+                    "delTask",
+                    id);
+
+                MySqlCommand cmd = new MySqlCommand(sql, mConn);
+                cmd.ExecuteNonQuery();
+            }
+        }
+
         public static DataRow PushChatMessage(ICD.ChatRoomInfo info)
         {
             if (info.body.mesgs.Length != 1)
@@ -270,7 +397,7 @@ namespace IWAS
                 info.body.recordID,
                 info.msgTime,
                 info.msgUser,
-                "메세지",
+                "msg",
                 info.body.mesgs[0].message);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
@@ -283,41 +410,6 @@ namespace IWAS
             adapter.Fill(ds, "Chat");
 
             return ds.Tables["Chat"].Rows[0];
-
-        }
-        public static DataRow PushNewChat(ICD.ChatRoomInfo info)
-        {
-            string sql = string.Format(
-                "INSERT INTO chat " +
-                "(time, creator, access, visitors) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}')",
-                info.msgTime,
-                info.msgUser,
-                info.body.access,
-                "");
-
-            MySqlCommand cmd = new MySqlCommand(sql, mConn);
-            cmd.ExecuteNonQuery();
-
-            sql = string.Format("SELECT * FROM chat WHERE time='{0}' AND creator='{1}'", info.msgTime, info.msgUser);
-            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
-
-            DataSet ds = new DataSet();
-            adapter.Fill(ds, "Chat");
-
-            return ds.Tables["Chat"].Rows[0];
-
-        }
-
-        public static void EditChatUsers(ICD.ChatRoomInfo info)
-        {
-            string sql = string.Format(
-                "UPDATE chat SET visitors='{0}' WHERE recordID={1} ",
-                info.body.ToStringUserList(),
-                info.body.recordID);
-
-            MySqlCommand cmd = new MySqlCommand(sql, mConn);
-            cmd.ExecuteNonQuery();
 
         }
     }
