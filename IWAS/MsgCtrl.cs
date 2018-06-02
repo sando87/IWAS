@@ -40,6 +40,7 @@ namespace IWAS
             mFuncArray[DEF.CMD_ShowChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_HideChat] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatMsgAll] = ICD_ProcChat;
+            mFuncArray[DEF.CMD_ChatRoomInfo] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatRoomList] = ICD_ChatRoomList;
 
             InitChatRooms();
@@ -131,8 +132,24 @@ namespace IWAS
         private void ICD_NewTask(int clientID, HEADER obj)
         {
             ICD.Task msg = obj as ICD.Task;
+
+            ChatRoom room = new ChatRoom();
+            ChatRoomInfo roomInfo = new ChatRoomInfo();
+            roomInfo.FillHeader(obj);
+            roomInfo.body.access = msg.access;
+            roomInfo.body.users = new string[2];
+            roomInfo.body.users[0] = msg.director;
+            roomInfo.body.users[1] = msg.worker;
+            int chatID = room.CreateNewChat(roomInfo);
+            mRooms[chatID] = room;
+            roomInfo.body.recordID = chatID;
+
+            msg.chatID = chatID;
             DataRow row = DatabaseMgr.NewTask(msg);
             int taskID = (int)row["recordID"];
+            roomInfo.body.taskIDs = new int[1];
+            roomInfo.body.taskIDs[0] = taskID;
+            room.AddTask(roomInfo);
 
             ICD.Task task = new ICD.Task();
             task.FillServerHeader(DEF.CMD_TaskInfo);
@@ -163,6 +180,8 @@ namespace IWAS
                 ICD.Task task = new ICD.Task();
                 task.FillServerHeader(DEF.CMD_TaskInfo);
                 DatabaseMgr.GetTaskLatest((int)row["recordID"], ref task);
+                int state = mRooms[task.chatID].GetUserState(obj.msgUser);
+                task.currentState = state;
                 sendMsg(obj.msgUser, task);
             }
         }
@@ -185,7 +204,7 @@ namespace IWAS
         private void ICD_NewChat(int clientID, HEADER obj)
         {
             ChatRoom room = new ChatRoom();
-            int chatID = room.ProcNewChat((ChatRoomInfo)obj);
+            int chatID = room.CreateNewChat((ChatRoomInfo)obj);
             mRooms[chatID] = room;
         }
 

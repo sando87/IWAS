@@ -46,10 +46,11 @@ namespace IWAS
             int msgSize = head.msgSize;
             if((head.msgID/10) == 2) //ID가 20~29이면
             {
-                if (head.msgID == DEF.CMD_ChatRoomList)
-                    return new ChatRoomList(1);
-                else
-                    return new ChatRoomInfo();
+                return new ChatRoomInfo();
+            }
+            else if (head.msgID == DEF.CMD_ChatRoomList)
+            {
+                return new ChatRoomList(1);
             }
             else if (msgSize == Marshal.SizeOf(typeof(HEADER)))
             {

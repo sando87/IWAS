@@ -84,16 +84,25 @@ namespace IWAS
         {
             string sql = string.Format(
                 "INSERT INTO task " +
-                "(type, time, creator, access, title, director, worker, chatID) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}')",
+                "(type, time, creator, access, mainCate, subCate, title, comment, director, worker, launch, due, term, state, priority, progress, chatID) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}','{14}', '{15}', '{16}')",
                 info.msgType,
                 info.msgTime,
                 info.creator,
                 info.access,
+                info.mainCategory,
+                info.subCategory,
                 info.title,
+                info.comment,
                 info.director,
                 info.worker,
-                -1);
+                info.preLaunch,
+                info.preDue,
+                info.preterm,
+                info.state,
+                info.priority,
+                info.progress,
+                info.chatID);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
             cmd.ExecuteNonQuery();
@@ -170,9 +179,19 @@ namespace IWAS
             task.createTime = taskRoot["time"].ToString();
             task.creator = taskRoot["creator"].ToString();
             task.access = taskRoot["access"].ToString();
+            task.mainCategory = taskRoot["mainCate"].ToString();
+            task.subCategory = taskRoot["subCate"].ToString();
             task.title = taskRoot["title"].ToString();
+            task.comment = taskRoot["comment"].ToString();
             task.director = taskRoot["director"].ToString();
             task.worker = taskRoot["worker"].ToString();
+            task.preLaunch = taskRoot["launch"].ToString();
+            task.preDue = taskRoot["due"].ToString();
+            task.preterm = taskRoot["term"].ToString();
+            task.state = taskRoot["state"].ToString();
+            task.priority = taskRoot["priority"].ToString();
+            task.progress = (int)taskRoot["progress"];
+            task.chatID = (int)taskRoot["chatID"];
 
             DataTable taskHis = GetTaskHistory(taskID);
             if (taskHis == null)
@@ -190,30 +209,21 @@ namespace IWAS
                     string[] data = info.Split(':');
                     switch (data[0])
                     {
-                        case "title":
-                            task.title = data[1];
-                            break;
-                        case "comment":
-                            task.comment = data[1];
-                            break;
-                        case "launch":
-                            task.preLaunch = data[1];
-                            break;
-                        case "access":
-                            task.access = data[1];
-                            break;
-                        case "director":
-                            task.director = data[1];
-                            break;
-                        case "worker":
-                            task.worker = data[1];
-                            break;
-                        case "progress":
-                            task.progress = int.Parse(data[1]);
-                            break;
-                        default:
-                            LOG.warn();
-                            break;
+                        case "access":      task.access = data[1]; break;
+                        case "mainCate":    task.mainCategory = data[1]; break;
+                        case "subCate":     task.subCategory = data[1]; break;
+                        case "title":       task.title = data[1]; break;
+                        case "comment":     task.comment = data[1]; break;
+                        case "director":    task.director = data[1]; break;
+                        case "worker":      task.worker = data[1]; break;
+                        case "launch":      task.preLaunch = data[1]; break;
+                        case "due":         task.preDue = data[1]; break;
+                        case "term":        task.preterm = data[1]; break;
+                        case "state":       task.state = data[1]; break;
+                        case "priority":    task.priority = data[1]; break;
+                        case "progress":    task.progress = int.Parse(data[1]); break;
+                        case "chatID":      task.chatID = int.Parse(data[1]); break;
+                        default:            LOG.warn(); break;
                     }
                 }
 

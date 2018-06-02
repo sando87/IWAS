@@ -162,14 +162,18 @@ namespace IWAS
 
         private void btnUser_Click(object sender, EventArgs e)
         {
-            DlgEditChatUsers dlg = new DlgEditChatUsers(mRoomID, mUsers);
+            DlgEditChatUsers dlg = new DlgEditChatUsers(mRoomID);
             dlg.ShowDialog();
 
-            if (dlg.mChatNewList == null)
-                return;
-
-            string[] pre = mUsers;
+            string[] pre = dlg.mChatUserList;
             string[] after = dlg.mChatNewList;
+
+            if(pre == null || after == null)
+            {
+                LOG.warn();
+                return;
+            }
+
 
             {
                 ChatRoomInfo msg = new ChatRoomInfo();

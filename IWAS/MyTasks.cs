@@ -40,9 +40,11 @@ namespace IWAS
             msg.FillClientHeader(ICD.DEF.CMD_TaskList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
+            /*
             ICD.ChatRoomList chatMsg = new ICD.ChatRoomList(1);
             chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList, 0);
             ICDPacketMgr.GetInst().sendMsgToServer(chatMsg);
+            */
         }
 
         private void InitListView()
@@ -54,7 +56,9 @@ namespace IWAS
             TaskList.Columns.Add("id");
             TaskList.Columns[0].Width = 50;
             TaskList.Columns.Add("title");
-            TaskList.Columns[1].Width = 300;
+            TaskList.Columns[1].Width = 100;
+            TaskList.Columns.Add("state");
+            TaskList.Columns[2].Width = 100;
 
             lvChat.View = View.Details;
             lvChat.GridLines = true;
@@ -88,9 +92,10 @@ namespace IWAS
         }
         private void AddListView(ICD.Task task)
         {
-            string [] infos = new string[2];
+            string [] infos = new string[3];
             infos[0] = task.recordID.ToString();
             infos[1] = task.title;
+            infos[2] = task.currentState.ToString();
 
             ListViewItem lvItems = new ListViewItem(infos);
             TaskList.Items.Add(lvItems);
@@ -142,8 +147,18 @@ namespace IWAS
         private void OnRecv_ChatRoomInfo(ICD.HEADER obj)
         {
             ICD.ChatRoomInfo msg = (ICD.ChatRoomInfo)obj;
-            mChats[msg.body.recordID] = msg.body;
-            UpdateChatList();
+            foreach(int id in msg.body.taskIDs)
+            {
+                if (!mTasks.ContainsKey(id))
+                    continue;
+
+                mTasks[id].currentState = msg.body.state;
+            }
+            UpdateTaskList();
+
+            //ICD.ChatRoomInfo msg = (ICD.ChatRoomInfo)obj;
+            //mChats[msg.body.recordID] = msg.body;
+            //UpdateChatList();
         }
 
         private void OnRecv_ChatList(ICD.HEADER obj)

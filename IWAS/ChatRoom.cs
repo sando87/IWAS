@@ -24,12 +24,13 @@ namespace IWAS
 
         private int mRoomID;
         private string mAccess;
-        private string[] mTaskIDs;
+        Dictionary<string, int> mTaskIDs = new Dictionary<string, int>();
         Dictionary<string, int> mUsers = new Dictionary<string, int>();//int값은 User의 현재 메세지 위치를 기억함
         List<MsgInfo> mMessages = new List<MsgInfo>();
 
         private void UpdateUsersFromDB(int chatID)
         {
+            
             mUsers.Clear();
             DataTable rowMsgs = DatabaseMgr.GetChatUsers(mRoomID);
             if (rowMsgs == null)
@@ -52,23 +53,22 @@ namespace IWAS
 
         private void UpdateTasksFromDB(int chatID)
         {
-            mUsers.Clear();
+            mTaskIDs.Clear();
             DataTable rowMsgs = DatabaseMgr.GetChatTasks(mRoomID);
             if (rowMsgs == null)
                 return;
 
-            string taskIDs = "";
             foreach (DataRow item in rowMsgs.Rows)
             {
                 if (item["type"].ToString() == "addTask")
                 {
-                    string user = item["info"].ToString();
-                    taskIDs += 
+                    string taskID = item["info"].ToString();
+                    mTaskIDs[taskID] = int.Parse(taskID);
                 }
                 else if (item["type"].ToString() == "delTask")
                 {
-                    string user = item["info"].ToString();
-                    vec.Remove(user);
+                    string taskID = item["info"].ToString();
+                    mTaskIDs.Remove(taskID);
                 }
             }
         }
@@ -96,17 +96,13 @@ namespace IWAS
 
             int cntMessages = mMessages.Count;
             DataRow room = DatabaseMgr.GetChatRoomInfo(mRoomID);
-            if (room == null)
-                return;
-
-            string visitors = room["visitors"].ToString();
-            string[] users = visitors.Split(',');
-            foreach (string user in users)
+            if (room != null)
             {
-                if (user.Length > 0)
-                    mUsers[user] = cntMessages;
+                mAccess = room["access"].ToString();
+                UpdateUsersFromDB(mRoomID);
+                UpdateTasksFromDB(mRoomID);
             }
-
+            return;
         }
 
         public bool IsUser(string name)
@@ -150,22 +146,52 @@ namespace IWAS
             }
         }
 
-        public int ProcNewChat(ChatRoomInfo obj)
+        public int CreateNewChat(ChatRoomInfo obj)
         {
             DataRow row = DatabaseMgr.PushNewChat(obj);
             mRoomID = (int)row["recordID"];
+            mAccess = obj.body.access;
             mMessages.Clear();
+            obj.body.recordID = mRoomID;
 
-            foreach (var user in obj.body.users)
+            if (obj.body.users != null)
             {
-                mUsers[user] = 0;
+                foreach (var user in obj.body.users)
+                    mUsers[user] = 0;
             }
 
-            ChatRoomInfo msg = GetRoomInfo();
-            DatabaseMgr.EditChatUsers(msg);
-            BroadcastRoomInfo(msg);
+            AddTask(obj);
+
+            DatabaseMgr.AddChatUsers(obj);
+            //BroadcastRoomInfo( GetRoomInfo() );
 
             return mRoomID;
+        }
+
+        public void DelTask(ChatRoomInfo obj)
+        {
+            DatabaseMgr.DelChatTasks(obj);
+            foreach (int id in obj.body.taskIDs)
+            {
+                string taskID = id.ToString();
+                if (mTaskIDs.ContainsKey(taskID))
+                {
+                    mTaskIDs.Remove(taskID);
+                }
+            }
+        }
+
+        public void AddTask(ChatRoomInfo obj)
+        {
+            if (obj.body.taskIDs == null)
+                return;
+
+            DatabaseMgr.AddChatTasks(obj);
+            foreach (int id in obj.body.taskIDs)
+            {
+                string taskID = id.ToString();
+                mTaskIDs[taskID] = id;
+            }
         }
 
         private void ProcRoomInfo(ChatRoomInfo obj)
@@ -182,11 +208,9 @@ namespace IWAS
 
             RoomInfo room = msg.body;
             room.recordID = mRoomID;
-            room.users = new string[mUsers.Count];
-            for (int i = 0; i < mUsers.Count; ++i)
-            {
-                room.users[i] = mUsers.ElementAt(i).Key;
-            }
+            room.access = mAccess;
+            room.users = mUsers.Keys.ToArray();
+            room.taskIDs = mTaskIDs.Values.ToArray();
 
             List<MesgInfo> vecMsgs = new List<MesgInfo>();
             int cnt = mMessages.Count;
@@ -286,9 +310,8 @@ namespace IWAS
                 MsgCtrl.GetInst().sendMsg(name, msg);
             }
 
-            ChatRoomInfo tmp = GetRoomInfo();
-            DatabaseMgr.EditChatUsers(tmp);
-            BroadcastRoomInfo(tmp);
+            DatabaseMgr.DelChatUsers(obj);
+            BroadcastRoomInfo( GetRoomInfo() );
         }
 
         private void ProcAddUsers(ChatRoomInfo obj)
@@ -301,9 +324,24 @@ namespace IWAS
                 mUsers[name] = mMessages.Count;
             }
 
-            ChatRoomInfo tmp = GetRoomInfo();
-            DatabaseMgr.EditChatUsers(tmp);
-            BroadcastRoomInfo(tmp);
+            DatabaseMgr.AddChatUsers(obj);
+            BroadcastRoomInfo(GetRoomInfo());
+        }
+
+        private void AddUsers(ChatRoomInfo obj)
+        {
+            if (obj.body.users == null)
+                return;
+
+            foreach (string name in obj.body.users)
+            {
+                if (mUsers.ContainsKey(name))
+                    continue;
+
+                mUsers[name] = mMessages.Count;
+            }
+
+            DatabaseMgr.AddChatUsers(obj);
         }
 
         private void ProcInUser(ChatRoomInfo obj)

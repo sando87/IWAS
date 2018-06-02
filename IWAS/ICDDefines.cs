@@ -37,10 +37,12 @@ namespace IWAS
             public const int CMD_ShowChat       = 24;
             public const int CMD_HideChat       = 25;
             public const int CMD_ChatRoomInfo   = 26;
-            public const int CMD_ChatRoomList   = 27;
-            public const int CMD_ChatMsgAll     = 28;
+            public const int CMD_ChatMsgAll     = 27;
+            //public const int CMD_ChatAddTask    = 28;
+            //public const int CMD_ChatDelTask    = 29;
+            public const int CMD_ChatRoomList   = 30;
 
-            public const int CMD_MAX_COUNT      = 30;
+            public const int CMD_MAX_COUNT      = 31;
 
             public const int TYPE_NONE = 0;
             public const int TYPE_REQ = 1;
@@ -80,6 +82,16 @@ namespace IWAS
                 msgErr = DEF.ERR_NoError;
                 msgUser = MyInfo.mMyInfo.userID;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+            }
+            public void FillHeader(HEADER head)
+            {
+                msgID = head.msgID;
+                msgSize = head.msgSize;
+                msgSOF = head.msgSOF;
+                msgType = head.msgType;
+                msgErr = head.msgErr;
+                msgUser = head.msgUser;
+                msgTime = head.msgTime;
             }
             public void FillHeader(int id)
             {
@@ -162,6 +174,8 @@ namespace IWAS
             [MarshalAs(UnmanagedType.I4)] public int recordID;
             [MarshalAs(UnmanagedType.I4)] public int cmdID;
             [MarshalAs(UnmanagedType.I4)] public int progress;
+            [MarshalAs(UnmanagedType.I4)] public int chatID;
+            [MarshalAs(UnmanagedType.I4)] public int currentState;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
