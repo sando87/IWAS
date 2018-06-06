@@ -68,6 +68,9 @@
     <Compile Include="DlgEditChatUsers.Designer.cs">
       <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
     </Compile>
+    <Compile Include="ExTrackListView.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="FifoBuffer.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">
