@@ -13,36 +13,39 @@ namespace IWAS
     {
         public class DEF
         {
-            public const int CMD_NONE           = 0;
-            public const int CMD_NewUser        = 1;
-            public const int CMD_UserList       = 2;
-            public const int CMD_Login          = 3;
-            public const int CMD_Logout         = 4;
-            public const int CMD_TaskNew        = 5;
-            public const int CMD_TaskEdit       = 6;
-            public const int CMD_TaskDelete     = 7;
-            public const int CMD_TaskList       = 8;
-            public const int CMD_TaskInfo       = 9;
+            public const int CMD_NONE = 0;
+            public const int CMD_NewUser = 1;
+            public const int CMD_UserList = 2;
+            public const int CMD_Login = 3;
+            public const int CMD_Logout = 4;
+            public const int CMD_TaskNew = 5;
+            public const int CMD_TaskEdit = 6;
+            public const int CMD_TaskDelete = 7;
+            public const int CMD_TaskList = 8;
+            public const int CMD_TaskInfo = 9;
             //public const int CMD_NewChat        = 10;
             //public const int CMD_AddChat        = 11;
-            public const int CMD_UploadFile     = 12;
-            public const int CMD_DownloadFile   = 13;
-            public const int CMD_LogMessage     = 14;
-            public const int CMD_Search         = 15;
+            public const int CMD_UploadFile = 12;
+            public const int CMD_DownloadFile = 13;
+            public const int CMD_LogMessage = 14;
+            public const int CMD_Search = 15;
 
-            public const int CMD_NewChat        = 20;
-            public const int CMD_ChatMsg        = 21;
-            public const int CMD_AddChatUsers   = 22;
-            public const int CMD_DelChatUsers   = 23;
-            public const int CMD_ShowChat       = 24;
-            public const int CMD_HideChat       = 25;
-            public const int CMD_ChatRoomInfo   = 26;
-            public const int CMD_ChatMsgAll     = 27;
+            public const int CMD_NewChat = 20;
+            public const int CMD_ChatMsg = 21;
+            public const int CMD_AddChatUsers = 22;
+            public const int CMD_DelChatUsers = 23;
+            public const int CMD_ShowChat = 24;
+            public const int CMD_HideChat = 25;
+            public const int CMD_ChatRoomInfo = 26;
+            public const int CMD_ChatMsgAll = 27;
             //public const int CMD_ChatAddTask    = 28;
             //public const int CMD_ChatDelTask    = 29;
-            public const int CMD_ChatRoomList   = 30;
+            public const int CMD_ChatRoomList = 30;
 
-            public const int CMD_MAX_COUNT      = 31;
+            public const int CMD_TaskListTime = 40;
+            public const int CMD_TaskHistory = 41;
+
+            public const int CMD_MAX_COUNT = 50;
 
             public const int TYPE_NONE = 0;
             public const int TYPE_REQ = 1;
@@ -53,11 +56,11 @@ namespace IWAS
             public const int MAGIC_SOF = 0xaa;
             public const int MAGIC_EOF = 0xbb;
 
-            public const int ERR_NoError    = 0;
-            public const int ERR_HaveID     = 1;
-            public const int ERR_NoID       = 2;
-            public const int ERR_WorngPW    = 3;
-            
+            public const int ERR_NoError = 0;
+            public const int ERR_HaveID = 1;
+            public const int ERR_NoID = 2;
+            public const int ERR_WorngPW = 3;
+
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
@@ -72,16 +75,22 @@ namespace IWAS
             public string msgUser;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgTime;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string ext1;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
+            public string ext2;
 
             public void FillClientHeader(int id, int size = -1)
             {
                 msgID = id;
-                msgSize = (size==-1)?Marshal.SizeOf(this):size;
+                msgSize = (size == -1) ? Marshal.SizeOf(this) : size;
                 msgSOF = DEF.MAGIC_SOF;
                 msgType = DEF.TYPE_REQ;
                 msgErr = DEF.ERR_NoError;
                 msgUser = MyInfo.mMyInfo.userID;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                ext1 = "";
+                ext2 = "";
             }
             public void FillHeader(HEADER head)
             {
@@ -92,6 +101,8 @@ namespace IWAS
                 msgErr = head.msgErr;
                 msgUser = head.msgUser;
                 msgTime = head.msgTime;
+                ext1 = "";
+                ext2 = "";
             }
             public void FillHeader(int id)
             {
@@ -102,6 +113,8 @@ namespace IWAS
                 msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                ext1 = "";
+                ext2 = "";
             }
             public void FillServerHeader(int id, int size = -1)
             {
@@ -112,6 +125,8 @@ namespace IWAS
                 msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                ext1 = "";
+                ext2 = "";
             }
             static public int HeaderSize()
             {
@@ -129,6 +144,8 @@ namespace IWAS
                 newObj.msgErr = msgErr;
                 newObj.msgUser = msgUser;
                 newObj.msgTime = msgTime;
+                newObj.ext1 = ext1;
+                newObj.ext2 = ext2;
 
                 return newObj;
             }
@@ -247,12 +264,14 @@ namespace IWAS
                 head.msgErr = msgErr;
                 head.msgUser = msgUser;
                 head.msgTime = msgTime;
+                head.ext1 = ext1;
+                head.ext2 = ext2;
 
                 ary.AddRange(head.Serialize());
 
                 ary.AddRange(BitConverter.GetBytes(msgCount));
 
-                for(int i=0; i<msgCount; ++i)
+                for (int i = 0; i < msgCount; ++i)
                 {
                     int msgSize = Marshal.SizeOf(typeof(ChatMsg));
                     byte[] src = new byte[msgSize];
@@ -276,11 +295,13 @@ namespace IWAS
 
                 msgUser = Encoding.ASCII.GetString(data, 20, 50).TrimEnd('\0');
                 msgTime = Encoding.ASCII.GetString(data, 70, 50).TrimEnd('\0');
+                ext1 = Encoding.ASCII.GetString(data, 120, 50).TrimEnd('\0');
+                ext2 = Encoding.ASCII.GetString(data, 170, 50).TrimEnd('\0');
 
                 int headLen = HEADER.HeaderSize();
                 msgCount = BitConverter.ToInt32(data, headLen);
                 msgs = new ChatMsg[msgCount];
-                for (int i=0; i<msgCount; ++i)
+                for (int i = 0; i < msgCount; ++i)
                 {
                     int msgSize = Marshal.SizeOf(typeof(ChatMsg));
                     byte[] dest = new byte[msgSize];
@@ -292,7 +313,7 @@ namespace IWAS
                     Marshal.PtrToStructure(gch.AddrOfPinnedObject(), msgs[i]);
                     gch.Free();
                 }
-                
+
             }
         }
 
@@ -384,6 +405,8 @@ namespace IWAS
                 msgErr = head.msgErr;
                 msgUser = head.msgUser;
                 msgTime = head.msgTime;
+                ext1 = head.ext1;
+                ext2 = head.ext2;
 
                 byte[] bodyBuf = new byte[bodySize];
                 Array.Copy(data, headSize, bodyBuf, 0, bodySize);
@@ -433,13 +456,15 @@ namespace IWAS
                 HEADER head = new HEADER();
                 head.Deserialize(ref headBuf);
 
-                msgID   = head.msgID;
+                msgID = head.msgID;
                 msgSize = head.msgSize;
-                msgSOF  = head.msgSOF;
+                msgSOF = head.msgSOF;
                 msgType = head.msgType;
-                msgErr  = head.msgErr;
+                msgErr = head.msgErr;
                 msgUser = head.msgUser;
                 msgTime = head.msgTime;
+                ext1 = head.ext1;
+                ext2 = head.ext2;
 
                 byte[] bodyBuf = new byte[bodySize];
                 Array.Copy(data, headSize, bodyBuf, 0, bodySize);
@@ -465,13 +490,13 @@ namespace IWAS
                 string ret = "";
                 if (users == null)
                     return ret;
-                
-                foreach(var item in users)
+
+                foreach (var item in users)
                 {
                     ret += item;
                     ret += ",";
                 }
-                return ret.Substring(0, ret.Length-1);
+                return ret.Substring(0, ret.Length - 1);
             }
         }
 
@@ -483,6 +508,154 @@ namespace IWAS
             public string user;
             public string time;
             public string message;
+        }
+        
+        [Serializable]
+        public class Work
+        {
+            public int recordID;
+            public int cmdID;
+            public int progress;
+            public int chatID;
+            public int currentState;
+            public string createTime;
+            public string kind;
+            public string access;
+            public string mainCategory;
+            public string subCategory;
+            public string title;
+            public string comment;
+            public string creator;
+            public string director;
+            public string worker;
+            public string preLaunch;
+            public string preterm;
+            public string preDue;
+            public string state;
+            public string priority;
+            public string timeOpen;
+            public string timeClose;
+        }
+
+        public class WorkList : HEADER
+        {
+            public Work[] works;
+
+            public override byte[] Serialize()
+            {
+                List<byte> ary = new List<byte>();
+
+                byte[] bodyBuf = null;
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bf.Serialize(ms, works);
+                    bodyBuf = ms.ToArray();
+                }
+
+                HEADER head = Clone();
+                head.msgSize = HeaderSize() + bodyBuf.Length;
+                ary.AddRange(head.Serialize());
+                ary.AddRange(bodyBuf);
+
+                return ary.ToArray();
+            }
+
+            public override void Deserialize(ref byte[] data)
+            {
+                int headSize = HEADER.HeaderSize();
+                int bodySize = data.Length - headSize;
+
+                byte[] headBuf = new byte[headSize];
+                Array.Copy(data, 0, headBuf, 0, headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+
+                msgID = head.msgID;
+                msgSize = head.msgSize;
+                msgSOF = head.msgSOF;
+                msgType = head.msgType;
+                msgErr = head.msgErr;
+                msgUser = head.msgUser;
+                msgTime = head.msgTime;
+                ext1 = head.ext1;
+                ext2 = head.ext2;
+
+                byte[] bodyBuf = new byte[bodySize];
+                Array.Copy(data, headSize, bodyBuf, 0, bodySize);
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream(bodyBuf))
+                {
+                    works = (Work[])bf.Deserialize(ms);
+                }
+            }
+        }
+
+
+        [Serializable]
+        public class WorkHistory
+        {
+            public int recordID;
+            public int taskID;
+            public string time;
+            public string editor;
+            public string columnName;
+            public string fromInfo;
+            public string toInfo;
+        }
+
+        public class WorkHistoryList : HEADER
+        {
+            public WorkHistory[] workHistory;
+
+            public override byte[] Serialize()
+            {
+                List<byte> ary = new List<byte>();
+
+                byte[] bodyBuf = null;
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    bf.Serialize(ms, workHistory);
+                    bodyBuf = ms.ToArray();
+                }
+
+                HEADER head = Clone();
+                head.msgSize = HeaderSize() + bodyBuf.Length;
+                ary.AddRange(head.Serialize());
+                ary.AddRange(bodyBuf);
+
+                return ary.ToArray();
+            }
+
+            public override void Deserialize(ref byte[] data)
+            {
+                int headSize = HEADER.HeaderSize();
+                int bodySize = data.Length - headSize;
+
+                byte[] headBuf = new byte[headSize];
+                Array.Copy(data, 0, headBuf, 0, headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+
+                msgID = head.msgID;
+                msgSize = head.msgSize;
+                msgSOF = head.msgSOF;
+                msgType = head.msgType;
+                msgErr = head.msgErr;
+                msgUser = head.msgUser;
+                msgTime = head.msgTime;
+                ext1 = head.ext1;
+                ext2 = head.ext2;
+
+                byte[] bodyBuf = new byte[bodySize];
+                Array.Copy(data, headSize, bodyBuf, 0, bodySize);
+                BinaryFormatter bf = new BinaryFormatter();
+                using (MemoryStream ms = new MemoryStream(bodyBuf))
+                {
+                    workHistory = (WorkHistory[])bf.Deserialize(ms);
+                }
+            }
         }
     }
 }

@@ -68,8 +68,11 @@
     <Compile Include="DlgEditChatUsers.Designer.cs">
       <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExTrackListView.cs">
-      <SubType>Component</SubType>
+    <Compile Include="DlgTaskTracking.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DlgTaskTracking.Designer.cs">
+      <DependentUpon>DlgTaskTracking.cs</DependentUpon>
     </Compile>
     <Compile Include="FifoBuffer.cs" />
     <Compile Include="LOG.cs" />
@@ -126,6 +129,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DlgEditChatUsers.resx">
       <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DlgTaskTracking.resx">
+      <DependentUpon>DlgTaskTracking.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="login.resx">
       <DependentUpon>login.cs</DependentUpon>

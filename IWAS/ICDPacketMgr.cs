@@ -52,6 +52,14 @@ namespace IWAS
             {
                 return new ChatRoomList(1);
             }
+            else if (head.msgID == DEF.CMD_TaskListTime)
+            {
+                return new WorkList();
+            }
+            else if (head.msgID == DEF.CMD_TaskHistory)
+            {
+                return new WorkHistoryList();
+            }
             else if (msgSize == Marshal.SizeOf(typeof(HEADER)))
             {
                 return new HEADER();

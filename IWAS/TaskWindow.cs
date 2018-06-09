@@ -229,8 +229,6 @@ namespace IWAS
 
         private void UpdateMsgListView(int id)
         {
-            ExTrackListView tt = new ExTrackListView();
-            tt.
             var msg = mMsgList[id];
             if (msg.index >= lvChatList.Items.Count)
             {
