@@ -42,18 +42,21 @@ namespace IWAS
             }
             else
             {
-                ICD.Task msgTask = new ICD.Task();
-                msgTask.FillClientHeader(ICD.DEF.CMD_TaskNew);
+                ICD.WorkList msg = new ICD.WorkList();
+                msg.FillClientHeader(ICD.DEF.CMD_TaskNew);
+                msg.works = new ICD.Work[1];
+                msg.works[0] = new ICD.Work();
+                ICD.Work msgTask = msg.works[0];
 
                 //comboBox listing
-                msgTask.kind = cbType.Text;
+                msgTask.type = cbType.Text;
                 msgTask.access = cbAccess.Text;
-                msgTask.mainCategory = cbMainCate.Text;
-                msgTask.subCategory = cbSubCate.Text;
+                msgTask.mainCate = cbMainCate.Text;
+                msgTask.subCate = cbSubCate.Text;
                 //formatting date
-                msgTask.preLaunch = tbLaunch.Text;
-                msgTask.preDue = tbDue.Text;
-                msgTask.preterm = tbTerm.Text;
+                msgTask.launch = tbLaunch.Text;
+                msgTask.due = tbDue.Text;
+                msgTask.term = tbTerm.Text;
                 msgTask.priority = cbPriority.Text;
                 //user listing
                 msgTask.creator = MyInfo.mMyInfo.userID;
@@ -62,7 +65,7 @@ namespace IWAS
                 msgTask.title = tbTitle.Text;
                 msgTask.comment = tbComment.Text;
 
-                ICDPacketMgr.GetInst().sendMsgToServer(msgTask);
+                ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
             Close();
         }

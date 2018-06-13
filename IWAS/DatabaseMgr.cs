@@ -80,34 +80,43 @@ namespace IWAS
             int ret = cmd.ExecuteNonQuery();
             return ret;
         }
-        public static DataRow NewTask(ICD.Task info)
+        public static DataRow NewTask(ICD.WorkList msg)
         {
+            if(msg.works == null || msg.works.Length != 1)
+            {
+                LOG.warn();
+                return null;
+            }
+            ICD.Work info = msg.works[0];
+
             string sql = string.Format(
                 "INSERT INTO task " +
-                "(type, time, creator, access, mainCate, subCate, title, comment, director, worker, launch, due, term, state, priority, progress, chatID) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}','{14}', '{15}', '{16}')",
-                info.msgType,
-                info.msgTime,
+                "(type, time, creator, access, mainCate, subCate, title, comment, director, worker, launch, due, term, state, priority, progress, chatID, timeFirst, timeDone) " +
+                "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}','{14}', '{15}', '{16}', '{17}', '{18}')",
+                msg.msgType,
+                msg.msgTime,
                 info.creator,
                 info.access,
-                info.mainCategory,
-                info.subCategory,
+                info.mainCate,
+                info.subCate,
                 info.title,
                 info.comment,
                 info.director,
                 info.worker,
-                info.preLaunch,
-                info.preDue,
-                info.preterm,
+                info.launch,
+                info.due,
+                info.term,
                 info.state,
                 info.priority,
                 info.progress,
-                info.chatID);
+                info.chatID,
+                info.timeFirst,
+                info.timeDone);
 
             MySqlCommand cmd = new MySqlCommand(sql, mConn);
             cmd.ExecuteNonQuery();
 
-            sql = string.Format("SELECT * FROM task WHERE time='{0}' AND creator='{1}'", info.msgTime, info.creator);
+            sql = string.Format("SELECT * FROM task WHERE time='{0}' AND creator='{1}'", msg.msgTime, info.creator);
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
 
             DataSet ds = new DataSet();
@@ -115,19 +124,25 @@ namespace IWAS
 
             return ds.Tables["TASK"].Rows[0];
         }
-        public static int EditTask(ICD.TaskEdit info)
+        public static int EditTask(ICD.WorkHistoryList msg)
         {
-            string sql = string.Format(
-                "INSERT INTO taskHistory " +
-                "(taskID, time, user, info) " +
-                "VALUES ('{0}', '{1}', '{2}', '{3}')",
-                info.taskID,
-                info.msgTime,
-                info.msgUser,
-                info.info);
+            int ret = 0;
+            foreach (var item in msg.workHistory)
+            {
+                string sql = string.Format(
+                    "INSERT INTO taskHistory " +
+                    "(taskID, time, user, columnName, fromInfo, toInfo) " +
+                    "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}')",
+                    item.taskID,
+                    msg.msgTime,
+                    msg.msgUser,
+                    item.columnName,
+                    item.fromInfo,
+                    item.toInfo);
 
-            MySqlCommand cmd = new MySqlCommand(sql, mConn);
-            int ret = cmd.ExecuteNonQuery();
+                MySqlCommand cmd = new MySqlCommand(sql, mConn);
+                ret += cmd.ExecuteNonQuery();
+            }
             return ret;
         }
         public static DataTable GetTasks(string from, string to)
@@ -183,30 +198,32 @@ namespace IWAS
 
             return ds.Tables["TASKHis"];
         }
-        public static void GetTaskLatest(int taskID, ref ICD.Task task)
+        public static void GetTaskLatest(int taskID, ref ICD.Work task)
         {
             DataRow taskRoot = GetTaskRoot(taskID);
             if (taskRoot == null)
                 return;
 
             task.recordID = (int)taskRoot["recordID"];
-            task.kind = taskRoot["type"].ToString();
-            task.createTime = taskRoot["time"].ToString();
+            task.type = taskRoot["type"].ToString();
+            task.time = taskRoot["time"].ToString();
             task.creator = taskRoot["creator"].ToString();
             task.access = taskRoot["access"].ToString();
-            task.mainCategory = taskRoot["mainCate"].ToString();
-            task.subCategory = taskRoot["subCate"].ToString();
+            task.mainCate = taskRoot["mainCate"].ToString();
+            task.subCate = taskRoot["subCate"].ToString();
             task.title = taskRoot["title"].ToString();
             task.comment = taskRoot["comment"].ToString();
             task.director = taskRoot["director"].ToString();
             task.worker = taskRoot["worker"].ToString();
-            task.preLaunch = taskRoot["launch"].ToString();
-            task.preDue = taskRoot["due"].ToString();
-            task.preterm = taskRoot["term"].ToString();
+            task.launch = taskRoot["launch"].ToString();
+            task.due = taskRoot["due"].ToString();
+            task.term = taskRoot["term"].ToString();
             task.state = taskRoot["state"].ToString();
             task.priority = taskRoot["priority"].ToString();
             task.progress = (int)taskRoot["progress"];
             task.chatID = (int)taskRoot["chatID"];
+            task.timeFirst = taskRoot["timeFirst"].ToString();
+            task.timeDone = taskRoot["timeDone"].ToString();
 
             DataTable taskHis = GetTaskHistory(taskID);
             if (taskHis == null)
@@ -214,34 +231,25 @@ namespace IWAS
 
             foreach (DataRow item in taskHis.Rows)
             {
-                string value = item["info"].ToString();
-                string[] infos = value.Split(',');
-                foreach (string info in infos)
+                string name = item["columName"].ToString();
+                switch (name)
                 {
-                    if (info.Length == 0)
-                        continue;
-
-                    string[] data = info.Split(':');
-                    switch (data[0])
-                    {
-                        case "access":      task.access = data[1]; break;
-                        case "mainCate":    task.mainCategory = data[1]; break;
-                        case "subCate":     task.subCategory = data[1]; break;
-                        case "title":       task.title = data[1]; break;
-                        case "comment":     task.comment = data[1]; break;
-                        case "director":    task.director = data[1]; break;
-                        case "worker":      task.worker = data[1]; break;
-                        case "launch":      task.preLaunch = data[1]; break;
-                        case "due":         task.preDue = data[1]; break;
-                        case "term":        task.preterm = data[1]; break;
-                        case "state":       task.state = data[1]; break;
-                        case "priority":    task.priority = data[1]; break;
-                        case "progress":    task.progress = int.Parse(data[1]); break;
-                        case "chatID":      task.chatID = int.Parse(data[1]); break;
-                        default:            LOG.warn(); break;
-                    }
+                    case "access":      task.access = item["toInfo"].ToString(); break;
+                    case "mainCate":    task.mainCate = item["toInfo"].ToString(); break;
+                    case "subCate":     task.subCate = item["toInfo"].ToString(); break;
+                    case "title":       task.title = item["toInfo"].ToString(); break;
+                    case "comment":     task.comment = item["toInfo"].ToString(); break;
+                    case "director":    task.director = item["toInfo"].ToString(); break;
+                    case "worker":      task.worker = item["toInfo"].ToString(); break;
+                    case "launch":      task.launch = item["toInfo"].ToString(); break;
+                    case "due":         task.due = item["toInfo"].ToString(); break;
+                    case "term":        task.term = item["toInfo"].ToString(); break;
+                    case "state":       task.state = item["toInfo"].ToString(); break;
+                    case "priority":    task.priority = item["toInfo"].ToString(); break;
+                    case "progress":    task.progress = (int)item["toInfo"]; break;
+                    case "chatID":      task.chatID = (int)item["toInfo"]; break;
+                    default:            LOG.warn(); break;
                 }
-
             }
         }
         public static DataTable GetChatMessages(int chatID)

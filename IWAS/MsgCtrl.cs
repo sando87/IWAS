@@ -43,6 +43,9 @@ namespace IWAS
             mFuncArray[DEF.CMD_ChatRoomInfo] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatRoomList] = ICD_ChatRoomList;
 
+            mFuncArray[DEF.CMD_TaskListTime] = ICD_ProcWorkList;
+            mFuncArray[DEF.CMD_TaskHistory] = ICD_ProcWorkHistory;
+
             InitChatRooms();
 
             ICDPacketMgr.GetInst().StartServiceServer();
@@ -218,6 +221,85 @@ namespace IWAS
             }
 
             mRooms[msg.body.recordID].ProcChat(msg);
+        }
+
+        private void ICD_ProcWorkList(int clientID, HEADER obj)
+        {
+            string user = obj.msgUser;
+            string fromdate = obj.ext1;
+            string todate = obj.ext2;
+            DataTable table = DatabaseMgr.GetTasks(fromdate, todate);
+            if (table == null)
+                return;
+
+            WorkList msg = new WorkList();
+            msg.FillServerHeader(DEF.CMD_TaskListTime, 0);
+            msg.works = new Work[table.Rows.Count];
+            foreach (DataRow row in table.Rows)
+            {
+                int idx = table.Rows.IndexOf(row);
+                msg.works[idx] = new Work();
+
+                msg.works[idx].recordID = (int)row["recordID"];
+                msg.works[idx].type = row["type"].ToString();
+                msg.works[idx].time = row["time"].ToString();
+                msg.works[idx].creator = row["creator"].ToString();
+                msg.works[idx].access = row["access"].ToString();
+                msg.works[idx].mainCate = row["mainCate"].ToString();
+                msg.works[idx].subCate = row["subCate"].ToString();
+                msg.works[idx].title = row["title"].ToString();
+                msg.works[idx].comment = row["comment"].ToString();
+                msg.works[idx].director = row["director"].ToString();
+                msg.works[idx].worker = row["worker"].ToString();
+                msg.works[idx].launch = row["launch"].ToString();
+                msg.works[idx].due = row["due"].ToString();
+                msg.works[idx].term = row["term"].ToString();
+                msg.works[idx].state = row["state"].ToString();
+                msg.works[idx].priority = row["priority"].ToString();
+                msg.works[idx].progress = (int)row["progress"];
+                msg.works[idx].chatID = (int)row["chatID"];
+                msg.works[idx].reportFirst = row["reportFirst"].ToString();
+                msg.works[idx].reportDone = row["reportDone"].ToString();
+            }
+            sendMsg(user, msg);
+        }
+
+        private void ICD_ProcWorkHistory(int clientID, HEADER obj)
+        {
+            string user = obj.msgUser;
+            int taskID = int.Parse(obj.ext1);
+            DataTable table = DatabaseMgr.GetTaskHistory(taskID);
+            if (table == null)
+                return;
+
+            List<WorkHistory> vec = new List<WorkHistory>();
+            foreach (DataRow item in table.Rows)
+            {
+                string value = item["info"].ToString();
+                string[] infos = value.Split(',');
+                foreach (string info in infos)
+                {
+                    if (info.Length == 0)
+                        continue;
+
+                    string[] data = info.Split(':');
+
+                    WorkHistory his = new WorkHistory();
+                    his.recordID = (int)item["recordID"];
+                    his.taskID = (int)item["taskID"];
+                    his.time = item["time"].ToString();
+                    his.editor = item["user"].ToString();
+                    his.columnName = data[0];
+                    his.toInfo = data[1];
+
+                    vec.Add(his);
+                }
+            }
+
+            WorkHistoryList msg = new WorkHistoryList();
+            msg.FillServerHeader(DEF.CMD_TaskHistory, 0);
+            msg.workHistory = vec.ToArray();
+            sendMsg(user, msg);
         }
 
         private void ICD_ChatRoomList(int clientID, HEADER obj)

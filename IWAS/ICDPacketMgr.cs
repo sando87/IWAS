@@ -68,14 +68,6 @@ namespace IWAS
             {
                 return new User();
             }
-            else if (msgSize == Marshal.SizeOf(typeof(ICD.Task)))
-            {
-                return new ICD.Task();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(TaskEdit)))
-            {
-                return new TaskEdit();
-            }
             else if (msgSize == Marshal.SizeOf(typeof(File)))
             {
                 return new File();

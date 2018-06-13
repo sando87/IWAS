@@ -18,11 +18,6 @@ namespace IWAS
             public const int CMD_UserList = 2;
             public const int CMD_Login = 3;
             public const int CMD_Logout = 4;
-            public const int CMD_TaskNew = 5;
-            public const int CMD_TaskEdit = 6;
-            public const int CMD_TaskDelete = 7;
-            public const int CMD_TaskList = 8;
-            public const int CMD_TaskInfo = 9;
             //public const int CMD_NewChat        = 10;
             //public const int CMD_AddChat        = 11;
             public const int CMD_UploadFile = 12;
@@ -42,8 +37,13 @@ namespace IWAS
             //public const int CMD_ChatDelTask    = 29;
             public const int CMD_ChatRoomList = 30;
 
-            public const int CMD_TaskListTime = 40;
+            public const int CMD_TaskBaseList = 40;
             public const int CMD_TaskHistory = 41;
+            public const int CMD_TaskNew = 42;
+            public const int CMD_TaskEdit = 43;
+            public const int CMD_TaskDelete = 44;
+            public const int CMD_TaskIDList = 45;
+            public const int CMD_TaskInfo = 46;
 
             public const int CMD_MAX_COUNT = 50;
 
@@ -184,7 +184,7 @@ namespace IWAS
             public string userPW;
 
         }
-
+        /*
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Task : HEADER
         {
@@ -235,6 +235,8 @@ namespace IWAS
             public string info;
 
         }
+        */
+
         /*
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
         public class Chat : HEADER
@@ -533,8 +535,8 @@ namespace IWAS
             public string due;
             public string state;
             public string priority;
-            public string reportFirst;
-            public string reportDone;
+            public string timeFirst;
+            public string timeDone;
         }
 
         public class WorkList : HEADER

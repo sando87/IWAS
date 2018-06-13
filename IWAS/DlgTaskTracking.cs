@@ -36,8 +36,8 @@ namespace IWAS
                 int to = int.Parse(totime);
                 int today = int.Parse(curtime);
                 int workCreate = int.Parse(workBase.time);
-                int workOpen = int.Parse(workBase.reportFirst);
-                int workClose = int.Parse(workBase.reportDone);
+                int workOpen = int.Parse(workBase.timeFirst);
+                int workClose = int.Parse(workBase.timeDone);
                 if (to < workOpen || workClose < from || today < workCreate)
                 {
                     workCurrent = null;

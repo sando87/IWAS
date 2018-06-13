@@ -14,11 +14,11 @@ namespace IWAS
 {
     public partial class TaskWindow : Form
     {
-        private ICD.Task mTask = new ICD.Task();
+        private ICD.Work mTask = new ICD.Work();
         private bool isEditable = false;
         Dictionary<int, ChatRoom.MsgInfo> mMsgList = new Dictionary<int, ChatRoom.MsgInfo>();
 
-        public TaskWindow(ICD.Task task)
+        public TaskWindow(ICD.Work task)
         {
             InitializeComponent();
 
@@ -57,8 +57,13 @@ namespace IWAS
         {
             if (DEF.CMD_TaskInfo == obj.msgID)
             {
-                ICD.Task msg = (ICD.Task)obj;
-                mTask = msg;
+                ICD.WorkList msg = (ICD.WorkList)obj;
+                if(msg.works.Length != 1)
+                {
+                    LOG.warn();
+                    return;
+                }
+                mTask = msg.works[0];
                 updateTaskInfo();
             }
             else if(DEF.CMD_ChatRoomInfo == obj.msgID)
@@ -107,14 +112,14 @@ namespace IWAS
             btnDirector.Text = mTask.director;
             tbComment.Text = mTask.comment;
             tbTitle.Text = mTask.title;
-            tbTerm.Text = mTask.preterm;
-            tbDue.Text = mTask.preDue;
-            tbLaunch.Text = mTask.preLaunch;
+            tbTerm.Text = mTask.term;
+            tbDue.Text = mTask.due;
+            tbLaunch.Text = mTask.launch;
             cbPriority.Text = mTask.priority;
-            cbSubCate.Text = mTask.subCategory;
-            cbMainCate.Text = mTask.mainCategory;
+            cbSubCate.Text = mTask.subCate;
+            cbMainCate.Text = mTask.mainCate;
             cbAccess.Text = mTask.access;
-            cbType.Text = mTask.kind;
+            cbType.Text = mTask.type;
         }
 
         private void enableAllCtrls(bool isEn)
@@ -148,30 +153,83 @@ namespace IWAS
 
         private void sendEditInfo()
         {
-            ICD.TaskEdit msg = new ICD.TaskEdit();
-            msg.FillClientHeader(ICD.DEF.CMD_TaskEdit);
-            msg.taskID = mTask.recordID;
-            msg.info = "";
+            List<WorkHistory> vec = new List<WorkHistory>();
+            if (cbMainCate.Text != mTask.mainCate)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "mainCate";
+                item.fromInfo = mTask.mainCate;
+                item.toInfo = cbMainCate.Text;
+                vec.Add(item);
+            }
+            if (cbSubCate.Text != mTask.subCate)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "subCate";
+                item.fromInfo = mTask.subCate;
+                item.toInfo = cbSubCate.Text;
+                vec.Add(item);
+            }
+            if (cbType.Text != mTask.type)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "type";
+                item.fromInfo = mTask.type;
+                item.toInfo = cbType.Text;
+                vec.Add(item);
+            }
+            if (tbTitle.Text != mTask.title)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "title";
+                item.fromInfo = mTask.title;
+                item.toInfo = tbTitle.Text;
+                vec.Add(item);
+            }
+            if (btnDirector.Text != mTask.director)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "director";
+                item.fromInfo = mTask.director;
+                item.toInfo = btnDirector.Text;
+                vec.Add(item);
+            }
+            if (btnWorker.Text != mTask.worker)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "worker";
+                item.fromInfo = mTask.worker;
+                item.toInfo = btnWorker.Text;
+                vec.Add(item);
+            }
+            //if (cbPriority.Text != mTask.priority) msg.info += string.Format("priority:{0},", cbPriority.Text);
+            //if (cbAccess.Text != mTask.access) msg.info += string.Format("access:{0},", cbAccess.Text);
+            //if (tbComment.Text != mTask.comment) msg.info += string.Format("comment:{0},", tbComment.Text);
+            //if (tbLaunch.Text != mTask.launch) msg.info += string.Format("launch:{0},", tbLaunch.Text);
+            //if (tbTerm.Text != mTask.term) msg.info += string.Format("term:{0},", tbTerm.Text);
+            //if (tbDue.Text != mTask.due) msg.info += string.Format("term:{0},", tbDue.Text);
 
-            if (cbMainCate.Text != mTask.mainCategory) msg.info += string.Format("mainCate:{0},", cbMainCate.Text);
-            if (cbSubCate.Text != mTask.subCategory) msg.info += string.Format("subCate:{0},", cbSubCate.Text);
-            if (cbPriority.Text != mTask.priority) msg.info += string.Format("priority:{0},", cbPriority.Text);
-            if (cbAccess.Text != mTask.access) msg.info += string.Format("access:{0},", cbAccess.Text);
-            if (cbType.Text != mTask.kind) msg.info += string.Format("type:{0},", cbType.Text);
-            if (tbTitle.Text != mTask.title) msg.info += string.Format("title:{0},", tbTitle.Text);
-            if (tbComment.Text != mTask.comment) msg.info += string.Format("comment:{0},", tbComment.Text);
-            if (btnDirector.Text != mTask.director) msg.info += string.Format("director:{0},", btnDirector.Text);
-            if (btnWorker.Text != mTask.worker) msg.info += string.Format("worker:{0},", btnWorker.Text);
-            if (tbLaunch.Text != mTask.preLaunch) msg.info += string.Format("launch:{0},", tbLaunch.Text);
-            if (tbTerm.Text != mTask.preterm) msg.info += string.Format("term:{0},", tbTerm.Text);
-            if (tbDue.Text != mTask.preDue) msg.info += string.Format("term:{0},", tbDue.Text);
-
-            if (msg.info.Length == 0)
+            if (vec.Count == 0)
             {
                 MessageBox.Show("변경점이 없습니다.");
             }
             else
             {
+                ICD.WorkHistoryList msg = new ICD.WorkHistoryList();
+                msg.FillClientHeader(ICD.DEF.CMD_TaskEdit);
+                msg.workHistory = vec.ToArray();
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
             

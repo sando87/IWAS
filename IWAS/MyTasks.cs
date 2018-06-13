@@ -14,7 +14,7 @@ namespace IWAS
     public partial class MyTasks : Form
     {
         static public Dictionary<int, ICD.RoomInfo> mChats = new Dictionary<int, ICD.RoomInfo>();
-        static public Dictionary<int, ICD.Task> mTasks = new Dictionary<int, ICD.Task>();
+        static public Dictionary<int, ICD.Work> mTasks = new Dictionary<int, ICD.Work>();
 
         public MyTasks()
         {
@@ -76,7 +76,7 @@ namespace IWAS
         {
             TaskList.Items.Clear();
 
-            foreach (KeyValuePair<int, ICD.Task> task in mTasks)
+            foreach (KeyValuePair<int, ICD.Work> task in mTasks)
             {
                 AddListView(task.Value);
             }
@@ -90,7 +90,7 @@ namespace IWAS
                 AddListView(chat.Value);
             }
         }
-        private void AddListView(ICD.Task task)
+        private void AddListView(ICD.Work task)
         {
             string [] infos = new string[3];
             infos[0] = task.recordID.ToString();
@@ -179,8 +179,10 @@ namespace IWAS
                 return;
             }
 
-            ICD.Task task = obj as ICD.Task;
-            mTasks[task.recordID] = task;
+            ICD.WorkList task = (ICD.WorkList)obj;
+            foreach(var item in task.works)
+                mTasks[item.recordID] = item;
+            
             UpdateTaskList();
         }
 
@@ -198,7 +200,7 @@ namespace IWAS
                 ListViewItem lvItem = items[0];
                 string strID = lvItem.SubItems[0].Text;
                 int taskID = int.Parse(strID);
-                ICD.Task objTask = mTasks[taskID];
+                ICD.Work objTask = mTasks[taskID];
                 TaskWindow window = new TaskWindow(objTask);
                 window.ShowDialog();
             }
