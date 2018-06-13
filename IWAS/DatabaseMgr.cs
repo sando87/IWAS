@@ -130,6 +130,21 @@ namespace IWAS
             int ret = cmd.ExecuteNonQuery();
             return ret;
         }
+        public static DataTable GetTasks(string from, string to)
+        {
+            string sql = string.Format(
+                "SELECT * FROM task WHERE reportDone>='{0}' AND time<='{1}'",
+                from, to);
+
+            MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);
+
+            DataSet ds = new DataSet();
+            int ret = adapter.Fill(ds, "TASK");
+            if (ret == 0)
+                return null;
+
+            return ds.Tables["TASK"];
+        }
         public static DataTable GetTasks(string user)
         {
             string sql = string.Format(
