@@ -518,23 +518,23 @@ namespace IWAS
             public int progress;
             public int chatID;
             public int currentState;
-            public string createTime;
-            public string kind;
+            public string time;
+            public string type;
             public string access;
-            public string mainCategory;
-            public string subCategory;
+            public string mainCate;
+            public string subCate;
             public string title;
             public string comment;
             public string creator;
             public string director;
             public string worker;
-            public string preLaunch;
-            public string preterm;
-            public string preDue;
+            public string launch;
+            public string term;
+            public string due;
             public string state;
             public string priority;
-            public string timeOpen;
-            public string timeClose;
+            public string reportFirst;
+            public string reportDone;
         }
 
         public class WorkList : HEADER

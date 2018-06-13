@@ -14,6 +14,7 @@ namespace IWAS
     public partial class DlgTaskTracking : Form
     {
         private const int VIEW_PERIOD = 15; //오늘 기준 15일 전후로 보여준다
+        private const int COLUMN_COUNT = 14;
 
         class ReportInfo
         {
@@ -29,14 +30,14 @@ namespace IWAS
             public WorkHistory[] his;
             public List<ReportInfo> reports = new List<ReportInfo>();
 
-            private void Update(string fromtime, string totime, string curtime)
+            public void Update(string fromtime, string totime, string curtime)
             {
                 int from = int.Parse(fromtime);
                 int to = int.Parse(totime);
                 int today = int.Parse(curtime);
-                int workCreate = int.Parse(workBase.createTime);
-                int workOpen = int.Parse(workBase.timeOpen);
-                int workClose = int.Parse(workBase.timeClose);
+                int workCreate = int.Parse(workBase.time);
+                int workOpen = int.Parse(workBase.reportFirst);
+                int workClose = int.Parse(workBase.reportDone);
                 if (to < workOpen || workClose < from || today < workCreate)
                 {
                     workCurrent = null;
@@ -54,9 +55,9 @@ namespace IWAS
                     switch (curHis.columnName)
                     {
                         case "title": workCurrent.title = curHis.toInfo; break;
-                        case "launch": workCurrent.preLaunch = curHis.toInfo; break;
-                        case "due": workCurrent.preDue = curHis.toInfo; break;
-                        case "term": workCurrent.preterm = curHis.toInfo; break;
+                        case "launch": workCurrent.launch = curHis.toInfo; break;
+                        case "due": workCurrent.due = curHis.toInfo; break;
+                        case "term": workCurrent.term = curHis.toInfo; break;
                         case "report":
                             {
                                 ReportInfo rep = new ReportInfo();
@@ -76,6 +77,7 @@ namespace IWAS
 
         Dictionary<int, TrackingInfo> mTracks = new Dictionary<int, TrackingInfo>();
         private int mCount = 0;
+        private int mCurFilterColumnIndex = 0;
 
         public DlgTaskTracking()
         {
@@ -90,37 +92,99 @@ namespace IWAS
             FormClosed += delegate {
                 ICDPacketMgr.GetInst().OnRecv -= OnProcTaskHistroy;
             };
-            
+
+            RequestTaskList("fromdate", "todate");
+        }
+
+        private void RequestTaskList(string from, string to)
+        {
             WorkList msg = new WorkList();
             msg.FillClientHeader(DEF.CMD_TaskListTime, 0);
 
             //default curDate +/-15 days
-            msg.ext1 = "fromTime";
-            msg.ext1 = "toTime";
+            msg.ext1 = from;
+            msg.ext1 = to;
 
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
 
 
-        private void InitListViews()
+    private void InitListViews()
         {
             lvTracking.View = View.Details;
             lvTracking.GridLines = true;
             lvTracking.FullRowSelect = true;
             lvTracking.Sorting = SortOrder.None;
 
+            lvTracking.ColumnClick += (ss, ee) => {
+                mCurFilterColumnIndex = ee.Column;
+            };
             //lvTracking.DrawSubItem += My_DrawSubItem;
 
-            /*
             lvTracking.Columns.Add("id");
             lvTracking.Columns[0].Width = 50;
-            lvTracking.Columns.Add("user");
+            lvTracking.Columns.Add("type");
             lvTracking.Columns[1].Width = 100;
-            lvTracking.Columns.Add("message");
-            lvTracking.Columns[2].Width = 100;
+            lvTracking.Columns.Add("time");
+            lvTracking.Columns[2].Width = 0;
+            lvTracking.Columns.Add("creator");
+            lvTracking.Columns[3].Width = 100;
+            lvTracking.Columns.Add("access");
+            lvTracking.Columns[4].Width = 100;
+            lvTracking.Columns.Add("mainCate");
+            lvTracking.Columns[5].Width = 100;
+            lvTracking.Columns.Add("subCate");
+            lvTracking.Columns[6].Width = 100;
+            lvTracking.Columns.Add("title");
+            lvTracking.Columns[7].Width = 100;
+            lvTracking.Columns.Add("comment");
+            lvTracking.Columns[8].Width = 100;
+            lvTracking.Columns.Add("director");
+            lvTracking.Columns[9].Width = 100;
+            lvTracking.Columns.Add("worker");
+            lvTracking.Columns[10].Width = 100;
             lvTracking.Columns.Add("state");
-            lvTracking.Columns[3].Width = 50;
-            */
+            lvTracking.Columns[11].Width = 100;
+            lvTracking.Columns.Add("priority");
+            lvTracking.Columns[12].Width = 100;
+            lvTracking.Columns.Add("progress");
+            lvTracking.Columns[COLUMN_COUNT-1].Width = 100;
+
+
+            
+        }
+
+        private IOrderedEnumerable<KeyValuePair<int,TrackingInfo>> OrderItems(int columnIndex)
+        {
+            switch(columnIndex)
+            {
+                case 0: return mTracks.OrderBy(num => num.Value.workCurrent.recordID);
+                case 1: return mTracks.OrderBy(num => num.Value.workCurrent.type);
+                case 2: return mTracks.OrderBy(num => num.Value.workCurrent.time);
+                case 3: return mTracks.OrderBy(num => num.Value.workCurrent.creator);
+                case 4: return mTracks.OrderBy(num => num.Value.workCurrent.access);
+                case 5: return mTracks.OrderBy(num => num.Value.workCurrent.mainCate);
+                case 6: return mTracks.OrderBy(num => num.Value.workCurrent.subCate);
+                case 7: return mTracks.OrderBy(num => num.Value.workCurrent.title);
+                case 8: return mTracks.OrderBy(num => num.Value.workCurrent.comment);
+                case 9: return mTracks.OrderBy(num => num.Value.workCurrent.director);
+                case 10: return mTracks.OrderBy(num => num.Value.workCurrent.worker);
+                case 11: return mTracks.OrderBy(num => num.Value.workCurrent.state);
+                case 12: return mTracks.OrderBy(num => num.Value.workCurrent.priority);
+                case COLUMN_COUNT-1: return mTracks.OrderBy(num => num.Value.workCurrent.progress);
+                //case 14: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
+                //case 15: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
+                //case 16: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
+                default: return null;
+            }
+        }
+
+        private bool IsHide(Work work)
+        {
+            if (work.worker == MyInfo.mMyInfo.userID)
+                return false;
+            else
+                return true;
         }
 
         private void My_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
@@ -193,16 +257,49 @@ namespace IWAS
             mCount--;
             if(mCount<=0)
             {
-                UpdateListView();
+                UpdateTaskTracking();
             }
         }
 
-        private void UpdateListView()
+        private void AddItemToListView(Work work)
         {
-            //Update WorkList
-            //Sort Current List
-            //filter records
-            //update listview
+            string[] field = new string[COLUMN_COUNT];
+
+            field[0] = work.recordID.ToString();
+            field[1] = work.type;
+            field[2] = work.time;
+            field[3] = work.creator;
+            field[4] = work.access;
+            field[5] = work.mainCate;
+            field[6] = work.subCate;
+            field[7] = work.title;
+            field[8] = work.comment;
+            field[9] = work.director;
+            field[10] = work.worker;
+            field[11] = work.state;
+            field[12] = work.priority;
+            field[COLUMN_COUNT-1] = work.progress.ToString();
+
+            lvTracking.Items.Add(new ListViewItem(field));
+        }
+
+        private void UpdateTaskTracking()
+        {
+            foreach (var item in mTracks)
+            {
+                item.Value.Update("today-15", "today+15", "today");
+            }
+
+            var orderedList = OrderItems(mCurFilterColumnIndex);
+            lvTracking.Items.Clear();
+            foreach (var item in orderedList)
+            {
+                if (IsHide(item.Value.workCurrent))
+                    continue;
+
+                AddItemToListView(item.Value.workCurrent);
+            }
+            
         }
     }
 }
