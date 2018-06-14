@@ -43,7 +43,7 @@ namespace IWAS
             else
             {
                 ICD.WorkList msg = new ICD.WorkList();
-                msg.FillClientHeader(ICD.DEF.CMD_TaskNew);
+                msg.FillClientHeader(ICD.DEF.CMD_TaskNew, 0);
                 ICD.Work msgTask = msg.works[0];
 
                 //comboBox listing

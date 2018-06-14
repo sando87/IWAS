@@ -25,7 +25,7 @@ namespace IWAS
         {
             if (ICD.DEF.CMD_UserList == obj.msgID)
             {
-                ICD.Message msg = (ICD.Message)obj;
+                ICD.Message msg = obj as ICD.Message;
                 string[] infos = msg.message.Split(',');
 
                 lvUserlist.Items.Clear();

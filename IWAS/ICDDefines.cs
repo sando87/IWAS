@@ -120,7 +120,7 @@ namespace IWAS
                 msgID = id;
                 msgSize = (size == -1) ? Marshal.SizeOf(this) : size;
                 msgSOF = DEF.MAGIC_SOF;
-                msgType = DEF.TYPE_REQ;
+                msgType = DEF.TYPE_REP;
                 msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
                 msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
