@@ -99,7 +99,7 @@ namespace IWAS
         private void RequestTaskList(string from, string to)
         {
             WorkList msg = new WorkList();
-            msg.FillClientHeader(DEF.CMD_TaskListTime, 0);
+            msg.FillClientHeader(DEF.CMD_TaskBaseList, 0);
 
             //default curDate +/-15 days
             msg.ext1 = from;
@@ -204,7 +204,7 @@ namespace IWAS
         {
             switch (obj.msgID)
             {
-                case ICD.DEF.CMD_TaskListTime:
+                case ICD.DEF.CMD_TaskBaseList:
                     ProcTaskListTime(obj);
                     break;
                 case ICD.DEF.CMD_TaskHistory:

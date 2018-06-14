@@ -148,7 +148,7 @@ namespace IWAS
         public static DataTable GetTasks(string from, string to)
         {
             string sql = string.Format(
-                "SELECT * FROM task WHERE reportDone>='{0}' AND time<='{1}'",
+                "SELECT * FROM task WHERE timeDone>='{0}' AND time<='{1}'",
                 from, to);
 
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);

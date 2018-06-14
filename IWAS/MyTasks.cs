@@ -37,12 +37,12 @@ namespace IWAS
             InitListView();
 
             ICD.HEADER msg = new ICD.HEADER();
-            msg.FillClientHeader(ICD.DEF.CMD_TaskList);
+            msg.FillClientHeader(ICD.DEF.CMD_TaskIDList);
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
 
             /*
-            ICD.ChatRoomList chatMsg = new ICD.ChatRoomList(1);
-            chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList, 0);
+            ICD.HEADER chatMsg = new ICD.HEADER();
+            chatMsg.FillClientHeader(ICD.DEF.CMD_ChatRoomList);
             ICDPacketMgr.GetInst().sendMsgToServer(chatMsg);
             */
         }
@@ -117,7 +117,8 @@ namespace IWAS
             ICD.HEADER obj = o as ICD.HEADER;
             switch (obj.msgID)
             {
-                case ICD.DEF.CMD_TaskInfo:
+                case ICD.DEF.CMD_TaskIDList:
+                case ICD.DEF.CMD_TaskLatestInfo:
                     OnRecv_TaskInfo(obj);
                     break;
                 case ICD.DEF.CMD_ChatRoomList:

@@ -31,7 +31,7 @@ namespace IWAS
             mFuncArray[DEF.CMD_Logout] = ICD_Logout;
             mFuncArray[DEF.CMD_TaskNew] = ICD_NewTask;
             mFuncArray[DEF.CMD_TaskEdit] = ICD_EditTask;
-            mFuncArray[DEF.CMD_TaskList] = ICD_TaskList;
+            mFuncArray[DEF.CMD_TaskIDList] = ICD_TaskList;
 
             mFuncArray[DEF.CMD_NewChat] = ICD_NewChat;
             mFuncArray[DEF.CMD_ChatMsg] = ICD_ProcChat;
@@ -43,7 +43,7 @@ namespace IWAS
             mFuncArray[DEF.CMD_ChatRoomInfo] = ICD_ProcChat;
             mFuncArray[DEF.CMD_ChatRoomList] = ICD_ChatRoomList;
 
-            mFuncArray[DEF.CMD_TaskListTime] = ICD_ProcWorkList;
+            mFuncArray[DEF.CMD_TaskBaseList] = ICD_ProcWorkList;
             mFuncArray[DEF.CMD_TaskHistory] = ICD_ProcWorkHistory;
 
             InitChatRooms();
@@ -134,59 +134,66 @@ namespace IWAS
 
         private void ICD_NewTask(int clientID, HEADER obj)
         {
-            ICD.Task msg = obj as ICD.Task;
+            ICD.WorkList msg = obj as ICD.WorkList;
+            if(msg.works == null && msg.works.Length!=1)
+            {
+                LOG.warn();
+                return;
+            }
+            ICD.Work work = msg.works[0];
 
             ChatRoom room = new ChatRoom();
             ChatRoomInfo roomInfo = new ChatRoomInfo();
             roomInfo.FillHeader(obj);
-            roomInfo.body.access = msg.access;
+            roomInfo.body.access = work.access;
             roomInfo.body.users = new string[2];
-            roomInfo.body.users[0] = msg.director;
-            roomInfo.body.users[1] = msg.worker;
+            roomInfo.body.users[0] = work.director;
+            roomInfo.body.users[1] = work.worker;
             int chatID = room.CreateNewChat(roomInfo);
             mRooms[chatID] = room;
             roomInfo.body.recordID = chatID;
 
-            msg.chatID = chatID;
+            work.chatID = chatID;
             DataRow row = DatabaseMgr.NewTask(msg);
             int taskID = (int)row["recordID"];
             roomInfo.body.taskIDs = new int[1];
             roomInfo.body.taskIDs[0] = taskID;
             room.AddTask(roomInfo);
 
-            ICD.Task task = new ICD.Task();
-            task.FillServerHeader(DEF.CMD_TaskInfo);
-            DatabaseMgr.GetTaskLatest(taskID, ref task);
-            sendMsg(task.worker, task);
-            sendMsg(task.director, task);
+            ICD.WorkList task = new ICD.WorkList();
+            task.FillServerHeader(DEF.CMD_TaskLatestInfo, 0);
+            DatabaseMgr.GetTaskLatest(taskID, ref task.works[0]);
+            sendMsg(task.works[0].worker, task);
+            sendMsg(task.works[0].director, task);
         }
         private void ICD_EditTask(int clientID, HEADER obj)
         {
-            TaskEdit msg = obj as TaskEdit;
+            WorkHistoryList msg = obj as WorkHistoryList;
             DatabaseMgr.EditTask(msg);
-            int taskID = msg.taskID;
+            int taskID = msg.workHistory[0].taskID;
 
-            ICD.Task task = new ICD.Task();
-            task.FillServerHeader(DEF.CMD_TaskInfo);
-            DatabaseMgr.GetTaskLatest(taskID, ref task);
-            sendMsg(task.worker, task);
-            sendMsg(task.director, task);
+            ICD.WorkList task = new ICD.WorkList();
+            task.FillServerHeader(DEF.CMD_TaskLatestInfo, 0);
+            DatabaseMgr.GetTaskLatest(taskID, ref task.works[0]);
+            sendMsg(task.works[0].worker, task);
+            sendMsg(task.works[0].director, task);
         }
         private void ICD_TaskList(int clientID, HEADER obj)
         {
             DataTable table = DatabaseMgr.GetTasks(obj.msgUser);
-            if (table == null)
+            if (table == null || table.Rows.Count==0)
                 return;
 
-            foreach(DataRow row in table.Rows)
+            ICD.WorkList msg = new ICD.WorkList(table.Rows.Count);
+            msg.FillServerHeader(DEF.CMD_TaskIDList, 0);
+            foreach (DataRow row in table.Rows)
             {
-                ICD.Task task = new ICD.Task();
-                task.FillServerHeader(DEF.CMD_TaskInfo);
-                DatabaseMgr.GetTaskLatest((int)row["recordID"], ref task);
-                int state = mRooms[task.chatID].GetUserState(obj.msgUser);
-                task.currentState = state;
-                sendMsg(obj.msgUser, task);
+                int index = table.Rows.IndexOf(row);
+                DatabaseMgr.GetTaskLatest((int)row["recordID"], ref msg.works[index]);
+                int state = mRooms[msg.works[index].chatID].GetUserState(obj.msgUser);
+                msg.works[index].currentState = state;
             }
+            sendMsg(obj.msgUser, msg);
         }
 
         private void InitChatRooms()
@@ -233,7 +240,7 @@ namespace IWAS
                 return;
 
             WorkList msg = new WorkList();
-            msg.FillServerHeader(DEF.CMD_TaskListTime, 0);
+            msg.FillServerHeader(DEF.CMD_TaskBaseList, 0);
             msg.works = new Work[table.Rows.Count];
             foreach (DataRow row in table.Rows)
             {
@@ -258,8 +265,8 @@ namespace IWAS
                 msg.works[idx].priority = row["priority"].ToString();
                 msg.works[idx].progress = (int)row["progress"];
                 msg.works[idx].chatID = (int)row["chatID"];
-                msg.works[idx].reportFirst = row["reportFirst"].ToString();
-                msg.works[idx].reportDone = row["reportDone"].ToString();
+                msg.works[idx].timeFirst = row["timeFirst"].ToString();
+                msg.works[idx].timeDone = row["timeDone"].ToString();
             }
             sendMsg(user, msg);
         }

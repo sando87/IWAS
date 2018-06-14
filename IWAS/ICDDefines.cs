@@ -20,10 +20,10 @@ namespace IWAS
             public const int CMD_Logout = 4;
             //public const int CMD_NewChat        = 10;
             //public const int CMD_AddChat        = 11;
-            public const int CMD_UploadFile = 12;
-            public const int CMD_DownloadFile = 13;
-            public const int CMD_LogMessage = 14;
-            public const int CMD_Search = 15;
+            //public const int CMD_UploadFile = 12;
+            //public const int CMD_DownloadFile = 13;
+            //public const int CMD_LogMessage = 14;
+            //public const int CMD_Search = 15;
 
             public const int CMD_NewChat = 20;
             public const int CMD_ChatMsg = 21;
@@ -41,9 +41,8 @@ namespace IWAS
             public const int CMD_TaskHistory = 41;
             public const int CMD_TaskNew = 42;
             public const int CMD_TaskEdit = 43;
-            public const int CMD_TaskDelete = 44;
             public const int CMD_TaskIDList = 45;
-            public const int CMD_TaskInfo = 46;
+            public const int CMD_TaskLatestInfo = 46;
 
             public const int CMD_MAX_COUNT = 50;
 
@@ -543,6 +542,13 @@ namespace IWAS
         {
             public Work[] works;
 
+            public WorkList(int n = 1)
+            {
+                works = new Work[n];
+                for (int i = 0; i < n; ++i)
+                    works[i] = new Work();
+            }
+
             public override byte[] Serialize()
             {
                 List<byte> ary = new List<byte>();
@@ -609,6 +615,13 @@ namespace IWAS
         public class WorkHistoryList : HEADER
         {
             public WorkHistory[] workHistory;
+
+            public WorkHistoryList(int n = 1)
+            {
+                workHistory = new WorkHistory[n];
+                for (int i = 0; i < n; ++i)
+                    workHistory[i] = new WorkHistory();
+            }
 
             public override byte[] Serialize()
             {

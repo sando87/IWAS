@@ -55,14 +55,12 @@ namespace IWAS
 
         private void OnRecvEditTask(int clientID, ICD.HEADER obj)
         {
-            if (DEF.CMD_TaskInfo == obj.msgID)
+            if (DEF.CMD_TaskLatestInfo == obj.msgID)
             {
                 ICD.WorkList msg = (ICD.WorkList)obj;
-                if(msg.works.Length != 1)
-                {
-                    LOG.warn();
+                if (mTask.recordID != msg.works[0].recordID)
                     return;
-                }
+
                 mTask = msg.works[0];
                 updateTaskInfo();
             }

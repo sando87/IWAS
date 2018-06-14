@@ -41,46 +41,67 @@ namespace IWAS
             networkMgr.connectServer(ip, port);
             networkMgr.startAsync();
         }
-        private HEADER CreateIcdObject(HEADER head)
+        private HEADER CreateICD_onClient(HEADER head)
         {
-            int msgSize = head.msgSize;
-            if((head.msgID/10) == 2) //ID가 20~29이면
+            switch(head.msgID)
             {
-                return new ChatRoomInfo();
+                case DEF.CMD_TaskIDList:
+                case DEF.CMD_TaskLatestInfo:
+                case DEF.CMD_TaskBaseList:
+                    return new WorkList();
+                case DEF.CMD_TaskHistory:
+                    return new WorkHistoryList();
+                case DEF.CMD_ChatRoomList:
+                    return new ChatRoomList(1);
+                case DEF.CMD_NewChat:
+                case DEF.CMD_ChatMsg:
+                case DEF.CMD_AddChatUsers:
+                case DEF.CMD_DelChatUsers:
+                case DEF.CMD_ShowChat:
+                case DEF.CMD_HideChat:
+                case DEF.CMD_ChatRoomInfo:
+                case DEF.CMD_ChatMsgAll:
+                    return new ChatRoomInfo();
+                case DEF.CMD_NewUser:
+                case DEF.CMD_Logout:
+                    return new HEADER();
+                case DEF.CMD_UserList:
+                    return new Message();
+                case DEF.CMD_Login:
+                    return new User();
             }
-            else if (head.msgID == DEF.CMD_ChatRoomList)
+            LOG.warn();
+            return null;
+        }
+        private HEADER CreateICD_onServer(HEADER head)
+        {
+            switch (head.msgID)
             {
-                return new ChatRoomList(1);
+                case DEF.CMD_TaskNew:
+                    return new WorkList();
+                case DEF.CMD_TaskEdit:
+                    return new WorkHistoryList();
+                case DEF.CMD_TaskBaseList:
+                case DEF.CMD_TaskHistory:
+                case DEF.CMD_TaskIDList:
+                case DEF.CMD_ChatRoomList:
+                case DEF.CMD_UserList:
+                    return new HEADER();
+                case DEF.CMD_NewChat:
+                case DEF.CMD_ChatMsg:
+                case DEF.CMD_AddChatUsers:
+                case DEF.CMD_DelChatUsers:
+                case DEF.CMD_ShowChat:
+                case DEF.CMD_HideChat:
+                case DEF.CMD_ChatRoomInfo:
+                case DEF.CMD_ChatMsgAll:
+                    return new ChatRoomInfo();
+                case DEF.CMD_NewUser:
+                case DEF.CMD_Login:
+                    return new User();
             }
-            else if (head.msgID == DEF.CMD_TaskListTime)
-            {
-                return new WorkList();
-            }
-            else if (head.msgID == DEF.CMD_TaskHistory)
-            {
-                return new WorkHistoryList();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(HEADER)))
-            {
-                return new HEADER();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(User)))
-            {
-                return new User();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(File)))
-            {
-                return new File();
-            }
-            else if (msgSize == Marshal.SizeOf(typeof(Message)))
-            {
-                return new Message();
-            }
-            else
-            {
-                LOG.warn();
-                return new HEADER();
-            }
+            LOG.warn();
+            return null;
         }
 
         private void OnRecvPacket(object sender, EventArgs e)
@@ -147,7 +168,15 @@ namespace IWAS
                     break;
 
                 byte[] msgBuf = pack.buf.Pop(msgSize);
-                HEADER msg = CreateIcdObject(head);
+
+                HEADER msg = null;
+                if (head.msgType == DEF.TYPE_REQ)
+                    msg = CreateICD_onServer(head);
+                else if (head.msgType == DEF.TYPE_REP)
+                    msg = CreateICD_onClient(head);
+                else
+                    LOG.warn();
+
                 msg.Deserialize(ref msgBuf);
                 OnRecv?.Invoke(pack.ClientID, msg);
             }

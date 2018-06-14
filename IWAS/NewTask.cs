@@ -44,8 +44,6 @@ namespace IWAS
             {
                 ICD.WorkList msg = new ICD.WorkList();
                 msg.FillClientHeader(ICD.DEF.CMD_TaskNew);
-                msg.works = new ICD.Work[1];
-                msg.works[0] = new ICD.Work();
                 ICD.Work msgTask = msg.works[0];
 
                 //comboBox listing
