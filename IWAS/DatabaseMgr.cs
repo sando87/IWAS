@@ -93,7 +93,7 @@ namespace IWAS
                 "INSERT INTO task " +
                 "(type, time, creator, access, mainCate, subCate, title, comment, director, worker, launch, due, term, state, priority, progress, chatID, timeFirst, timeDone) " +
                 "VALUES ('{0}', '{1}', '{2}', '{3}', '{4}', '{5}','{6}', '{7}', '{8}', '{9}', '{10}', '{11}', '{12}', '{13}','{14}', '{15}', '{16}', '{17}', '{18}')",
-                msg.msgType,
+                info.type,
                 msg.msgTime,
                 info.creator,
                 info.access,
@@ -124,6 +124,21 @@ namespace IWAS
 
             return ds.Tables["TASK"].Rows[0];
         }
+
+        public static int EditTaskBase(int taskID, string columnName, string data)
+        {
+            string sql = string.Format(
+                "UPDATE task SET {0}='{1}' WHERE recordID='{2}'",
+                columnName,
+                data,
+                taskID.ToString());
+
+            MySqlCommand cmd = new MySqlCommand(sql, mConn);
+            int ret = cmd.ExecuteNonQuery();
+
+            return ret;
+        }
+
         public static int EditTask(ICD.WorkHistoryList msg)
         {
             int ret = 0;
@@ -231,7 +246,7 @@ namespace IWAS
 
             foreach (DataRow item in taskHis.Rows)
             {
-                string name = item["columName"].ToString();
+                string name = item["columnName"].ToString();
                 switch (name)
                 {
                     case "access":      task.access = item["toInfo"].ToString(); break;
@@ -248,6 +263,10 @@ namespace IWAS
                     case "priority":    task.priority = item["toInfo"].ToString(); break;
                     case "progress":    task.progress = (int)item["toInfo"]; break;
                     case "chatID":      task.chatID = (int)item["toInfo"]; break;
+                    case "reportMid":      task.state = "진행"; break;
+                    case "reportDone":      task.state = "완료대기"; break;
+                    case "confirmOK":      task.state = "완료"; break;
+                    case "confirmNO":      task.state = "진행"; break;
                     default:            LOG.warn(); break;
                 }
             }

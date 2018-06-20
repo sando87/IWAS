@@ -68,6 +68,12 @@
     <Compile Include="DlgEditChatUsers.Designer.cs">
       <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
     </Compile>
+    <Compile Include="DlgReportTask.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DlgReportTask.Designer.cs">
+      <DependentUpon>DlgReportTask.cs</DependentUpon>
+    </Compile>
     <Compile Include="DlgTaskTracking.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -129,6 +135,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="DlgEditChatUsers.resx">
       <DependentUpon>DlgEditChatUsers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DlgReportTask.resx">
+      <DependentUpon>DlgReportTask.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DlgTaskTracking.resx">
       <DependentUpon>DlgTaskTracking.cs</DependentUpon>

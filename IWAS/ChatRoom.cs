@@ -112,10 +112,10 @@ namespace IWAS
 
         public void ProcChat(ChatRoomInfo obj)
         {
-            if (!mUsers.ContainsKey(obj.msgUser))
-            {
-                return;
-            }
+            //if (!mUsers.ContainsKey(obj.msgUser))
+            //{
+            //    return;
+            //}
 
             switch (obj.msgID)
             {

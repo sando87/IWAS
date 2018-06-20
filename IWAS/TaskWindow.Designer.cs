@@ -379,6 +379,7 @@
             this.btnReport.TabIndex = 33;
             this.btnReport.Text = "Report";
             this.btnReport.UseVisualStyleBackColor = true;
+            this.btnReport.Click += new System.EventHandler(this.btnReport_Click);
             // 
             // TaskWindow
             // 

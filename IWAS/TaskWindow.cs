@@ -226,9 +226,10 @@ namespace IWAS
             else
             {
                 ICD.WorkHistoryList msg = new ICD.WorkHistoryList();
-                msg.FillClientHeader(ICD.DEF.CMD_TaskEdit);
+                msg.FillClientHeader(ICD.DEF.CMD_TaskEdit, 0);
                 msg.workHistory = vec.ToArray();
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
+                SendChatMessage("Task정보가 변경되었습니다.", true);
             }
             
         }
@@ -247,24 +248,25 @@ namespace IWAS
         {
             if (e.Shift == false && e.KeyCode == Keys.Enter)
             {
-                SendChatMessage();
+                if (tbChatMsg.Text.Length != 0)
+                {
+                    SendChatMessage( tbChatMsg.Text );
+                    tbChatMsg.Text = "";
+                }
+                
             }
         }
 
-        private void SendChatMessage()
+        private void SendChatMessage(string message, bool isSystem = false)
         {
-            if (tbChatMsg.Text.Length == 0)
-                return;
-
             ChatRoomInfo msg = new ChatRoomInfo();
             msg.FillClientHeader(DEF.CMD_ChatMsg, 0);
+            if (isSystem) msg.msgUser = "system";
             msg.body.recordID = mTask.chatID;
             msg.body.mesgs = new MesgInfo[1];
             msg.body.mesgs[0] = new MesgInfo();
-            msg.body.mesgs[0].message = tbChatMsg.Text;
-
+            msg.body.mesgs[0].message = message;
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
-            tbChatMsg.Text = "";
         }
 
         private void InitListViews()
@@ -364,6 +366,23 @@ namespace IWAS
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
             Close();
+        }
+
+        private void btnReport_Click(object sender, EventArgs e)
+        {
+            DlgReportTask dlg = new DlgReportTask();
+            dlg.Show();
+            
+            if(dlg.mIsReport)
+            {
+                WorkHistoryList msg = new WorkHistoryList();
+                msg.FillClientHeader(DEF.CMD_TaskEdit, 0);
+                msg.workHistory[0].editor = MyInfo.mMyInfo.userID;
+                msg.workHistory[0].taskID = mTask.recordID;
+                msg.workHistory[0].columnName = (dlg.Type == "중간보고") ? "reportMid" : "reportDone";
+                msg.workHistory[0].toInfo = dlg.Date + "," + dlg.Msg;
+                ICDPacketMgr.GetInst().sendMsgToServer(msg);
+            }
         }
     }
 }

@@ -172,6 +172,27 @@ namespace IWAS
             DatabaseMgr.EditTask(msg);
             int taskID = msg.workHistory[0].taskID;
 
+            DataRow taskBase = DatabaseMgr.GetTaskRoot(taskID);
+            foreach (var item in msg.workHistory)
+            {
+                string[] data = new string[2];
+                data = item.toInfo.Split(',', (char)2);
+                if(item.columnName == "reportMid")
+                {
+                    int preTime = (int)taskBase["timeFirst"];
+                    int newTime = int.Parse(data[0]);
+                    if (preTime > newTime)
+                        DatabaseMgr.EditTaskBase(taskID, "timeFirst", data[0]);
+                }
+                else if (item.columnName == "confirmOK")
+                {
+                    int preTime = (int)taskBase["timeDone"];
+                    int newTime = int.Parse(data[0]);
+                    if (preTime == int.MaxValue || preTime < newTime)
+                        DatabaseMgr.EditTaskBase(taskID, "timeDone", data[0]);
+                }
+            }
+
             ICD.WorkList task = new ICD.WorkList();
             task.FillServerHeader(DEF.CMD_TaskLatestInfo, 0);
             DatabaseMgr.GetTaskLatest(taskID, ref task.works[0]);
@@ -282,25 +303,16 @@ namespace IWAS
             List<WorkHistory> vec = new List<WorkHistory>();
             foreach (DataRow item in table.Rows)
             {
-                string value = item["info"].ToString();
-                string[] infos = value.Split(',');
-                foreach (string info in infos)
-                {
-                    if (info.Length == 0)
-                        continue;
+                WorkHistory his = new WorkHistory();
+                his.recordID = (int)item["recordID"];
+                his.taskID = (int)item["taskID"];
+                his.time = item["time"].ToString();
+                his.editor = item["user"].ToString();
+                his.columnName = item["columnName"].ToString();
+                his.fromInfo = item["fromInfo"].ToString();
+                his.toInfo = item["toInfo"].ToString();
 
-                    string[] data = info.Split(':');
-
-                    WorkHistory his = new WorkHistory();
-                    his.recordID = (int)item["recordID"];
-                    his.taskID = (int)item["taskID"];
-                    his.time = item["time"].ToString();
-                    his.editor = item["user"].ToString();
-                    his.columnName = data[0];
-                    his.toInfo = data[1];
-
-                    vec.Add(his);
-                }
+                vec.Add(his);
             }
 
             WorkHistoryList msg = new WorkHistoryList();
