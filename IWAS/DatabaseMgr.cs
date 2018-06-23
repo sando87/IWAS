@@ -221,7 +221,7 @@ namespace IWAS
 
             task.recordID = (int)taskRoot["recordID"];
             task.type = taskRoot["type"].ToString();
-            task.time = taskRoot["time"].ToString();
+            task.time = (long)taskRoot["time"];
             task.creator = taskRoot["creator"].ToString();
             task.access = taskRoot["access"].ToString();
             task.mainCate = taskRoot["mainCate"].ToString();
@@ -230,15 +230,15 @@ namespace IWAS
             task.comment = taskRoot["comment"].ToString();
             task.director = taskRoot["director"].ToString();
             task.worker = taskRoot["worker"].ToString();
-            task.launch = taskRoot["launch"].ToString();
-            task.due = taskRoot["due"].ToString();
-            task.term = taskRoot["term"].ToString();
+            task.launch = (long)taskRoot["launch"];
+            task.due = (long)taskRoot["due"];
+            task.term = (long)taskRoot["term"];
             task.state = taskRoot["state"].ToString();
             task.priority = taskRoot["priority"].ToString();
             task.progress = (int)taskRoot["progress"];
             task.chatID = (int)taskRoot["chatID"];
-            task.timeFirst = taskRoot["timeFirst"].ToString();
-            task.timeDone = taskRoot["timeDone"].ToString();
+            task.timeFirst = (long)taskRoot["timeFirst"];
+            task.timeDone = (long)taskRoot["timeDone"];
 
             DataTable taskHis = GetTaskHistory(taskID);
             if (taskHis == null)
@@ -256,9 +256,9 @@ namespace IWAS
                     case "comment":     task.comment = item["toInfo"].ToString(); break;
                     case "director":    task.director = item["toInfo"].ToString(); break;
                     case "worker":      task.worker = item["toInfo"].ToString(); break;
-                    case "launch":      task.launch = item["toInfo"].ToString(); break;
-                    case "due":         task.due = item["toInfo"].ToString(); break;
-                    case "term":        task.term = item["toInfo"].ToString(); break;
+                    case "launch":      task.launch = (long)item["toInfo"]; break;
+                    case "due":         task.due = (long)item["toInfo"]; break;
+                    case "term":        task.term = (long)item["toInfo"]; break;
                     case "state":       task.state = item["toInfo"].ToString(); break;
                     case "priority":    task.priority = item["toInfo"].ToString(); break;
                     case "progress":    task.progress = (int)item["toInfo"]; break;

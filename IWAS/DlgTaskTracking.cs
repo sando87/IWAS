@@ -18,7 +18,7 @@ namespace IWAS
 
         class ReportInfo
         {
-            public string time;
+            public long time;
             public string type;
             public string message;
         }
@@ -35,9 +35,9 @@ namespace IWAS
                 int from = int.Parse(fromtime);
                 int to = int.Parse(totime);
                 int today = int.Parse(curtime);
-                int workCreate = int.Parse(workBase.time);
-                int workOpen = int.Parse(workBase.timeFirst);
-                int workClose = int.Parse(workBase.timeDone);
+                long workCreate = workBase.time;
+                long workOpen = workBase.timeFirst;
+                long workClose = workBase.timeDone;
                 if (to < workOpen || workClose < from || today < workCreate)
                 {
                     workCurrent = null;
@@ -47,7 +47,7 @@ namespace IWAS
 
                 reports.Clear();
                 workCurrent = workBase;
-                int current = workOpen;
+                long current = workOpen;
                 int i = 0;
                 while (current <= today && i < his.Length)
                 {
@@ -55,9 +55,9 @@ namespace IWAS
                     switch (curHis.columnName)
                     {
                         case "title": workCurrent.title = curHis.toInfo; break;
-                        case "launch": workCurrent.launch = curHis.toInfo; break;
-                        case "due": workCurrent.due = curHis.toInfo; break;
-                        case "term": workCurrent.term = curHis.toInfo; break;
+                        case "launch": workCurrent.launch = long.Parse(curHis.toInfo); break;
+                        case "due": workCurrent.due = long.Parse(curHis.toInfo); break;
+                        case "term": workCurrent.term = long.Parse(curHis.toInfo); break;
                         case "report":
                             {
                                 ReportInfo rep = new ReportInfo();
@@ -68,7 +68,7 @@ namespace IWAS
                             }
                             break;
                     }
-                    current = int.Parse(curHis.time);
+                    current = curHis.time;
                     i++;
                 }
 
@@ -267,7 +267,7 @@ namespace IWAS
 
             field[0] = work.recordID.ToString();
             field[1] = work.type;
-            field[2] = work.time;
+            field[2] = new DateTime(work.time).ToString();
             field[3] = work.creator;
             field[4] = work.access;
             field[5] = work.mainCate;

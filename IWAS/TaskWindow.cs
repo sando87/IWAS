@@ -110,9 +110,9 @@ namespace IWAS
             btnDirector.Text = mTask.director;
             tbComment.Text = mTask.comment;
             tbTitle.Text = mTask.title;
-            tbTerm.Text = mTask.term;
-            tbDue.Text = mTask.due;
-            tbLaunch.Text = mTask.launch;
+            dtLaunch.Value = new DateTime(mTask.launch);
+            dtDue.Value = new DateTime(mTask.due);
+            dtTerm.Value = new DateTime(mTask.term);
             cbPriority.Text = mTask.priority;
             cbSubCate.Text = mTask.subCate;
             cbMainCate.Text = mTask.mainCate;
@@ -126,9 +126,9 @@ namespace IWAS
             btnDirector.Enabled = isEn;
             tbComment.Enabled   = isEn;
             tbTitle.Enabled     = isEn;
-            tbTerm.Enabled      = isEn;
-            tbDue.Enabled       = isEn;
-            tbLaunch.Enabled    = isEn;
+            dtTerm.Enabled      = isEn;
+            dtDue.Enabled       = isEn;
+            dtLaunch.Enabled    = isEn;
             cbPriority.Enabled  = isEn;
             cbSubCate.Enabled   = isEn;
             cbMainCate.Enabled  = isEn;

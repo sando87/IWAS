@@ -16,8 +16,8 @@ namespace IWAS
             public int msgID;
             public int tick;
             public int index;
+            public long time;
             public bool isSignaled;
-            public string time;
             public string user;
             public string message;
         }
@@ -87,7 +87,7 @@ namespace IWAS
                     info.message = msg.Substring(0, msg.Length);
                     info.isSignaled = false;
                     info.msgID = (int)item["recordID"];
-                    info.time = item["time"].ToString();
+                    info.time = (long)item["time"];
                     info.user = item["user"].ToString();
                     info.tick = 0;
                     mMessages.Add(info);

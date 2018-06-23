@@ -270,7 +270,7 @@ namespace IWAS
 
                 msg.works[idx].recordID = (int)row["recordID"];
                 msg.works[idx].type = row["type"].ToString();
-                msg.works[idx].time = row["time"].ToString();
+                msg.works[idx].time = (long)row["time"];
                 msg.works[idx].creator = row["creator"].ToString();
                 msg.works[idx].access = row["access"].ToString();
                 msg.works[idx].mainCate = row["mainCate"].ToString();
@@ -279,15 +279,15 @@ namespace IWAS
                 msg.works[idx].comment = row["comment"].ToString();
                 msg.works[idx].director = row["director"].ToString();
                 msg.works[idx].worker = row["worker"].ToString();
-                msg.works[idx].launch = row["launch"].ToString();
-                msg.works[idx].due = row["due"].ToString();
-                msg.works[idx].term = row["term"].ToString();
+                msg.works[idx].launch = (long)row["launch"];
+                msg.works[idx].due = (long)row["due"];
+                msg.works[idx].term = (long)row["term"];
                 msg.works[idx].state = row["state"].ToString();
                 msg.works[idx].priority = row["priority"].ToString();
                 msg.works[idx].progress = (int)row["progress"];
                 msg.works[idx].chatID = (int)row["chatID"];
-                msg.works[idx].timeFirst = row["timeFirst"].ToString();
-                msg.works[idx].timeDone = row["timeDone"].ToString();
+                msg.works[idx].timeFirst = (long)row["timeFirst"];
+                msg.works[idx].timeDone = (long)row["timeDone"];
             }
             sendMsg(user, msg);
         }
@@ -306,7 +306,7 @@ namespace IWAS
                 WorkHistory his = new WorkHistory();
                 his.recordID = (int)item["recordID"];
                 his.taskID = (int)item["taskID"];
-                his.time = item["time"].ToString();
+                his.time = (long)item["time"];
                 his.editor = item["user"].ToString();
                 his.columnName = item["columnName"].ToString();
                 his.fromInfo = item["fromInfo"].ToString();

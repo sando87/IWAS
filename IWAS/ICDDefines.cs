@@ -70,10 +70,9 @@ namespace IWAS
             [MarshalAs(UnmanagedType.I4)] public int msgSize;
             [MarshalAs(UnmanagedType.I4)] public int msgType;
             [MarshalAs(UnmanagedType.I4)] public int msgErr;
+            [MarshalAs(UnmanagedType.I8)] public long msgTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string msgUser;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string msgTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string ext1;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
@@ -87,7 +86,7 @@ namespace IWAS
                 msgType = DEF.TYPE_REQ;
                 msgErr = DEF.ERR_NoError;
                 msgUser = MyInfo.mMyInfo.userID;
-                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                msgTime = DateTime.Now.Ticks;
                 ext1 = "";
                 ext2 = "";
             }
@@ -111,7 +110,7 @@ namespace IWAS
                 msgType = DEF.TYPE_NONE;
                 msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
-                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                msgTime = DateTime.Now.Ticks;
                 ext1 = "";
                 ext2 = "";
             }
@@ -123,7 +122,7 @@ namespace IWAS
                 msgType = DEF.TYPE_REP;
                 msgErr = DEF.ERR_NoError;
                 msgUser = ConstDefines.SYSNAME;
-                msgTime = DateTime.Now.ToString("yyyyMMddHHmmss");
+                msgTime = DateTime.Now.Ticks;
                 ext1 = "";
                 ext2 = "";
             }
@@ -293,11 +292,11 @@ namespace IWAS
                 msgSize = BitConverter.ToInt32(data, 8);
                 msgType = BitConverter.ToInt32(data, 12);
                 msgErr = BitConverter.ToInt32(data, 16);
+                msgTime = BitConverter.ToInt64(data, 20);
 
-                msgUser = Encoding.ASCII.GetString(data, 20, 50).TrimEnd('\0');
-                msgTime = Encoding.ASCII.GetString(data, 70, 50).TrimEnd('\0');
-                ext1 = Encoding.ASCII.GetString(data, 120, 50).TrimEnd('\0');
-                ext2 = Encoding.ASCII.GetString(data, 170, 50).TrimEnd('\0');
+                msgUser = Encoding.ASCII.GetString(data, 28, 58).TrimEnd('\0');
+                ext1 = Encoding.ASCII.GetString(data, 78, 58).TrimEnd('\0');
+                ext2 = Encoding.ASCII.GetString(data, 128, 58).TrimEnd('\0');
 
                 int headLen = HEADER.HeaderSize();
                 msgCount = BitConverter.ToInt32(data, headLen);
@@ -322,8 +321,7 @@ namespace IWAS
         public class ChatMsg
         {
             [MarshalAs(UnmanagedType.I4)] public int msgID;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string time;
+            [MarshalAs(UnmanagedType.I8)] public long time;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
             public string user;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
@@ -338,8 +336,7 @@ namespace IWAS
             [MarshalAs(UnmanagedType.I4)] public int chatID;
             [MarshalAs(UnmanagedType.I4)] public int packetIDX;
             [MarshalAs(UnmanagedType.I4)] public int packetCNT;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 50)]
-            public string createTime;
+            [MarshalAs(UnmanagedType.I8)] public long createTime;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string fileName;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
@@ -506,8 +503,8 @@ namespace IWAS
         {
             public int recordID;
             public int tick;
+            public long time;
             public string user;
-            public string time;
             public string message;
         }
         
@@ -519,7 +516,12 @@ namespace IWAS
             public int progress;
             public int chatID;
             public int currentState;
-            public string time;
+            public long time;
+            public long launch;
+            public long term;
+            public long due;
+            public long timeFirst;
+            public long timeDone;
             public string type;
             public string access;
             public string mainCate;
@@ -529,13 +531,8 @@ namespace IWAS
             public string creator;
             public string director;
             public string worker;
-            public string launch;
-            public string term;
-            public string due;
             public string state;
             public string priority;
-            public string timeFirst;
-            public string timeDone;
         }
 
         public class WorkList : HEADER
@@ -605,7 +602,7 @@ namespace IWAS
         {
             public int recordID;
             public int taskID;
-            public string time;
+            public long time;
             public string editor;
             public string columnName;
             public string fromInfo;

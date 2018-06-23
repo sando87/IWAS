@@ -52,9 +52,9 @@ namespace IWAS
                 msgTask.mainCate = cbMainCate.Text;
                 msgTask.subCate = cbSubCate.Text;
                 //formatting date
-                msgTask.launch = tbLaunch.Text;
-                msgTask.due = tbDue.Text;
-                msgTask.term = tbTerm.Text;
+                msgTask.launch = dtLaunch.Value.Ticks;
+                msgTask.due = dtDue.Value.Ticks;
+                msgTask.term = dtTerm.Value.Ticks;
                 msgTask.priority = cbPriority.Text;
                 //user listing
                 msgTask.creator = MyInfo.mMyInfo.userID;
