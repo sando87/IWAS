@@ -31,13 +31,14 @@
             this.NewTask = new System.Windows.Forms.Button();
             this.TaskList = new System.Windows.Forms.ListView();
             this.lvChat = new System.Windows.Forms.ListView();
+            this.btnTracking = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // NewTask
             // 
-            this.NewTask.Location = new System.Drawing.Point(13, 13);
+            this.NewTask.Location = new System.Drawing.Point(11, 14);
             this.NewTask.Name = "NewTask";
-            this.NewTask.Size = new System.Drawing.Size(75, 23);
+            this.NewTask.Size = new System.Drawing.Size(64, 25);
             this.NewTask.TabIndex = 0;
             this.NewTask.Text = "NewTask";
             this.NewTask.UseVisualStyleBackColor = true;
@@ -45,29 +46,40 @@
             // 
             // TaskList
             // 
-            this.TaskList.Location = new System.Drawing.Point(13, 43);
+            this.TaskList.Location = new System.Drawing.Point(11, 47);
             this.TaskList.MultiSelect = false;
             this.TaskList.Name = "TaskList";
-            this.TaskList.Size = new System.Drawing.Size(259, 129);
+            this.TaskList.Size = new System.Drawing.Size(223, 139);
             this.TaskList.TabIndex = 1;
             this.TaskList.UseCompatibleStateImageBehavior = false;
             this.TaskList.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.TaskList_MouseDoubleClick);
             // 
             // lvChat
             // 
-            this.lvChat.Location = new System.Drawing.Point(13, 205);
+            this.lvChat.Location = new System.Drawing.Point(11, 222);
             this.lvChat.MultiSelect = false;
             this.lvChat.Name = "lvChat";
-            this.lvChat.Size = new System.Drawing.Size(259, 157);
+            this.lvChat.Size = new System.Drawing.Size(223, 170);
             this.lvChat.TabIndex = 2;
             this.lvChat.UseCompatibleStateImageBehavior = false;
             this.lvChat.DoubleClick += new System.EventHandler(this.lvChat_DoubleClick);
             // 
+            // btnTracking
+            // 
+            this.btnTracking.Location = new System.Drawing.Point(159, 14);
+            this.btnTracking.Name = "btnTracking";
+            this.btnTracking.Size = new System.Drawing.Size(75, 23);
+            this.btnTracking.TabIndex = 3;
+            this.btnTracking.Text = "Tracking";
+            this.btnTracking.UseVisualStyleBackColor = true;
+            this.btnTracking.Click += new System.EventHandler(this.btnTracking_Click);
+            // 
             // MyTasks
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 374);
+            this.ClientSize = new System.Drawing.Size(243, 405);
+            this.Controls.Add(this.btnTracking);
             this.Controls.Add(this.lvChat);
             this.Controls.Add(this.TaskList);
             this.Controls.Add(this.NewTask);
@@ -83,5 +95,6 @@
         private System.Windows.Forms.Button NewTask;
         private System.Windows.Forms.ListView TaskList;
         private System.Windows.Forms.ListView lvChat;
+        private System.Windows.Forms.Button btnTracking;
     }
 }

@@ -30,6 +30,12 @@ namespace IWAS
             InitListViews();
             updateTaskInfo();
 
+            if(mTask.director == MyInfo.mMyInfo.userID && mTask.director != mTask.worker)
+            {
+                btnReport.Text = "확인";
+                btnReport.Enabled = false;
+            }
+
             ICDPacketMgr.GetInst().OnRecv += OnRecvEditTask;
             FormClosed += delegate{
                 ICDPacketMgr.GetInst().OnRecv -= OnRecvEditTask;
@@ -63,6 +69,11 @@ namespace IWAS
 
                 mTask = msg.works[0];
                 updateTaskInfo();
+                if (mTask.state == "완료대기" && mTask.director == MyInfo.mMyInfo.userID)
+                {
+                    btnReport.Text = "확인";
+                    btnReport.Enabled = true;
+                }
             }
             else if(DEF.CMD_ChatRoomInfo == obj.msgID)
             {
@@ -370,17 +381,27 @@ namespace IWAS
 
         private void btnReport_Click(object sender, EventArgs e)
         {
-            DlgReportTask dlg = new DlgReportTask();
+            bool typeReport = (mTask.state == "완료대기") ? false : true;
+            DlgReportTask dlg = new DlgReportTask(typeReport);
             dlg.Show();
             
-            if(dlg.mIsReport)
+            if(dlg.mIsOK)
             {
                 WorkHistoryList msg = new WorkHistoryList();
                 msg.FillClientHeader(DEF.CMD_TaskEdit, 0);
                 msg.workHistory[0].editor = MyInfo.mMyInfo.userID;
                 msg.workHistory[0].taskID = mTask.recordID;
-                msg.workHistory[0].columnName = (dlg.Type == "중간보고") ? "reportMid" : "reportDone";
-                msg.workHistory[0].toInfo = dlg.Date + "," + dlg.Msg;
+                if(typeReport)
+                {
+                    msg.workHistory[0].columnName = (dlg.Type == "중간보고") ? "reportMid" : "reportDone";
+                    msg.workHistory[0].toInfo = dlg.Time.ToString() + "," + dlg.Msg;
+                }
+                else
+                {
+                    msg.workHistory[0].columnName = (dlg.Type == "승인") ? "confirmOK" : "confirmNO";
+                    msg.workHistory[0].toInfo = dlg.Msg;
+                }
+                
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
         }

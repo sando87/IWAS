@@ -30,11 +30,12 @@ namespace IWAS
             public WorkHistory[] his;
             public List<ReportInfo> reports = new List<ReportInfo>();
 
-            public void Update(string fromtime, string totime, string curtime)
+            public void Update(DateTime date)
             {
-                int from = int.Parse(fromtime);
-                int to = int.Parse(totime);
-                int today = int.Parse(curtime);
+                TimeSpan span = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
+                long from = date.Ticks - span.Ticks;
+                long to = date.Ticks + span.Ticks;
+                long today = date.Ticks;
                 long workCreate = workBase.time;
                 long workOpen = workBase.timeFirst;
                 long workClose = workBase.timeDone;
@@ -58,15 +59,18 @@ namespace IWAS
                         case "launch": workCurrent.launch = long.Parse(curHis.toInfo); break;
                         case "due": workCurrent.due = long.Parse(curHis.toInfo); break;
                         case "term": workCurrent.term = long.Parse(curHis.toInfo); break;
-                        case "report":
+                        case "reportMid":
+                        case "reportDone":
                             {
+                                string[] data = curHis.toInfo.Split(',', (char)2);
                                 ReportInfo rep = new ReportInfo();
-                                rep.time = curHis.time;
+                                rep.time = long.Parse( data[0] );
                                 rep.type = curHis.columnName;
-                                rep.message = curHis.toInfo;
+                                rep.message = data[1];
                                 reports.Add(rep);
                             }
                             break;
+                        default: break;
                     }
                     current = curHis.time;
                     i++;
@@ -93,23 +97,25 @@ namespace IWAS
                 ICDPacketMgr.GetInst().OnRecv -= OnProcTaskHistroy;
             };
 
-            RequestTaskList("fromdate", "todate");
+            TimeSpan span = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
+            DateTime from = DateTime.Now - span;
+            DateTime to = DateTime.Now + span;
+            RequestTaskList(from, to);
         }
 
-        private void RequestTaskList(string from, string to)
+        private void RequestTaskList(DateTime from, DateTime to)
         {
             WorkList msg = new WorkList();
             msg.FillClientHeader(DEF.CMD_TaskBaseList, 0);
 
-            //default curDate +/-15 days
-            msg.ext1 = from;
-            msg.ext1 = to;
+            msg.ext1 = from.Ticks.ToString();
+            msg.ext2 = to.Ticks.ToString();
 
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
 
 
-    private void InitListViews()
+        private void InitListViews()
         {
             lvTracking.View = View.Details;
             lvTracking.GridLines = true;
@@ -220,7 +226,7 @@ namespace IWAS
             mCount = 0;
             ICD.WorkList msg = (ICD.WorkList)obj;
 
-            WorkHistoryList msgHis = new WorkHistoryList();
+            HEADER msgHis = new HEADER();
             msgHis.FillClientHeader(DEF.CMD_TaskHistory, 0);
 
             foreach (Work item in msg.works)
@@ -285,9 +291,10 @@ namespace IWAS
 
         private void UpdateTaskTracking()
         {
+            DateTime today = DateTime.Today;
             foreach (var item in mTracks)
             {
-                item.Value.Update("today-15", "today+15", "today");
+                item.Value.Update(today);
             }
 
             var orderedList = OrderItems(mCurFilterColumnIndex);

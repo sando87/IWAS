@@ -160,10 +160,10 @@ namespace IWAS
             }
             return ret;
         }
-        public static DataTable GetTasks(string from, string to)
+        public static DataTable GetTasks(long from, long to)
         {
             string sql = string.Format(
-                "SELECT * FROM task WHERE timeDone>='{0}' AND time<='{1}'",
+                "SELECT * FROM task WHERE timeDone>={0} AND time<={1}",
                 from, to);
 
             MySqlDataAdapter adapter = new MySqlDataAdapter(sql, mConn);

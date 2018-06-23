@@ -254,9 +254,9 @@ namespace IWAS
         private void ICD_ProcWorkList(int clientID, HEADER obj)
         {
             string user = obj.msgUser;
-            string fromdate = obj.ext1;
-            string todate = obj.ext2;
-            DataTable table = DatabaseMgr.GetTasks(fromdate, todate);
+            long fromTick = long.Parse( obj.ext1 );
+            long toTick = long.Parse( obj.ext2 );
+            DataTable table = DatabaseMgr.GetTasks(fromTick, toTick);
             if (table == null)
                 return;
 

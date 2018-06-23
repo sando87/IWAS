@@ -222,5 +222,11 @@ namespace IWAS
             }
 
         }
+
+        private void btnTracking_Click(object sender, EventArgs e)
+        {
+            DlgTaskTracking dlg = new DlgTaskTracking();
+            dlg.Show();
+        }
     }
 }
