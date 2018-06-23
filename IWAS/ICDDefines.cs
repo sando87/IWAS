@@ -171,6 +171,97 @@ namespace IWAS
                 gch.Free();
             }
 
+            static private HEADER CreateRealMessage(HEADER head)
+            {
+                if (head.msgType == DEF.TYPE_REQ)
+                {
+                    switch (head.msgID)
+                    {
+                        case DEF.CMD_TaskNew:
+                            return new WorkList();
+                        case DEF.CMD_TaskEdit:
+                            return new WorkHistoryList();
+                        case DEF.CMD_TaskBaseList:
+                        case DEF.CMD_TaskHistory:
+                        case DEF.CMD_TaskIDList:
+                        case DEF.CMD_ChatRoomList:
+                        case DEF.CMD_UserList:
+                            return new HEADER();
+                        case DEF.CMD_NewChat:
+                        case DEF.CMD_ChatMsg:
+                        case DEF.CMD_AddChatUsers:
+                        case DEF.CMD_DelChatUsers:
+                        case DEF.CMD_ShowChat:
+                        case DEF.CMD_HideChat:
+                        case DEF.CMD_ChatRoomInfo:
+                        case DEF.CMD_ChatMsgAll:
+                            return new ChatRoomInfo();
+                        case DEF.CMD_NewUser:
+                        case DEF.CMD_Login:
+                            return new User();
+                    }
+                }
+                else if (head.msgType == DEF.TYPE_REP)
+                {
+                    switch (head.msgID)
+                    {
+                        case DEF.CMD_TaskIDList:
+                        case DEF.CMD_TaskLatestInfo:
+                        case DEF.CMD_TaskBaseList:
+                            return new WorkList();
+                        case DEF.CMD_TaskHistory:
+                            return new WorkHistoryList();
+                        case DEF.CMD_ChatRoomList:
+                            return new ChatRoomList(1);
+                        case DEF.CMD_NewChat:
+                        case DEF.CMD_ChatMsg:
+                        case DEF.CMD_AddChatUsers:
+                        case DEF.CMD_DelChatUsers:
+                        case DEF.CMD_ShowChat:
+                        case DEF.CMD_HideChat:
+                        case DEF.CMD_ChatRoomInfo:
+                        case DEF.CMD_ChatMsgAll:
+                            return new ChatRoomInfo();
+                        case DEF.CMD_NewUser:
+                        case DEF.CMD_Logout:
+                            return new HEADER();
+                        case DEF.CMD_UserList:
+                            return new Message();
+                        case DEF.CMD_Login:
+                            return new User();
+                    }
+                }
+                
+                LOG.warn();
+                return null;
+            }
+
+            static public HEADER ConvertBytesToICDMessage(byte[] buf)
+            {
+                long nRecvLen = buf.Length;
+                int headSize = ICD.HEADER.HeaderSize();
+                if (nRecvLen < headSize)
+                    return null;
+
+                byte[] headBuf = new byte[headSize];
+                Array.Copy(buf, 0, headBuf, 0, headSize);
+                HEADER head = new HEADER();
+                head.Deserialize(ref headBuf);
+                if (head.msgSOF != ICD.DEF.MAGIC_SOF)
+                {
+                    LOG.warn();
+                    return null;
+                }
+
+                int msgSize = head.msgSize;
+                if (nRecvLen < msgSize)
+                    return null;
+
+                byte[] msgBuf = new byte[msgSize];
+                HEADER realMsg = CreateRealMessage(head);
+                realMsg.Deserialize(ref msgBuf);
+                return realMsg;
+            }
         }
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]

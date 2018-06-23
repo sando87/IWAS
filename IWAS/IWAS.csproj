@@ -81,6 +81,8 @@
       <DependentUpon>DlgTaskTracking.cs</DependentUpon>
     </Compile>
     <Compile Include="FifoBuffer.cs" />
+    <Compile Include="IT_TcpServer.cs" />
+    <Compile Include="IT_UdpServer.cs" />
     <Compile Include="LOG.cs" />
     <Compile Include="login.cs">
       <SubType>Form</SubType>
