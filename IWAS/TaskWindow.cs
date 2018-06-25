@@ -33,7 +33,7 @@ namespace IWAS
             if(mTask.director == MyInfo.mMyInfo.userID && mTask.director != mTask.worker)
             {
                 btnReport.Text = "확인";
-                btnReport.Enabled = false;
+                btnReport.Enabled = (mTask.state=="완료대기") ? true : false;
             }
 
             ICDPacketMgr.GetInst().OnRecv += OnRecvEditTask;
@@ -383,7 +383,7 @@ namespace IWAS
         {
             bool typeReport = (mTask.state == "완료대기") ? false : true;
             DlgReportTask dlg = new DlgReportTask(typeReport);
-            dlg.Show();
+            dlg.ShowDialog();
             
             if(dlg.mIsOK)
             {

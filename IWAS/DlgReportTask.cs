@@ -44,6 +44,7 @@ namespace IWAS
             Type = cbType.Text;
             Time = dtReport.Value.Ticks;
             Msg = tbComment.Text;
+            Close();
         }
     }
 }

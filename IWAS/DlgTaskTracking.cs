@@ -105,8 +105,8 @@ namespace IWAS
 
         private void RequestTaskList(DateTime from, DateTime to)
         {
-            WorkList msg = new WorkList();
-            msg.FillClientHeader(DEF.CMD_TaskBaseList, 0);
+            HEADER msg = new HEADER();
+            msg.FillClientHeader(DEF.CMD_TaskBaseList);
 
             msg.ext1 = from.Ticks.ToString();
             msg.ext2 = to.Ticks.ToString();
@@ -164,23 +164,23 @@ namespace IWAS
         {
             switch(columnIndex)
             {
-                case 0: return mTracks.OrderBy(num => num.Value.workCurrent.recordID);
-                case 1: return mTracks.OrderBy(num => num.Value.workCurrent.type);
-                case 2: return mTracks.OrderBy(num => num.Value.workCurrent.time);
-                case 3: return mTracks.OrderBy(num => num.Value.workCurrent.creator);
-                case 4: return mTracks.OrderBy(num => num.Value.workCurrent.access);
-                case 5: return mTracks.OrderBy(num => num.Value.workCurrent.mainCate);
-                case 6: return mTracks.OrderBy(num => num.Value.workCurrent.subCate);
-                case 7: return mTracks.OrderBy(num => num.Value.workCurrent.title);
-                case 8: return mTracks.OrderBy(num => num.Value.workCurrent.comment);
-                case 9: return mTracks.OrderBy(num => num.Value.workCurrent.director);
-                case 10: return mTracks.OrderBy(num => num.Value.workCurrent.worker);
-                case 11: return mTracks.OrderBy(num => num.Value.workCurrent.state);
-                case 12: return mTracks.OrderBy(num => num.Value.workCurrent.priority);
-                case COLUMN_COUNT-1: return mTracks.OrderBy(num => num.Value.workCurrent.progress);
-                //case 14: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
-                //case 15: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
-                //case 16: return mTracks.OrderBy(num => num.Value.workCurrent.createTime);
+                case 0: return mTracks.OrderBy(num => num.Value.workCurrent?.recordID);
+                case 1: return mTracks.OrderBy(num => num.Value.workCurrent?.type);
+                case 2: return mTracks.OrderBy(num => num.Value.workCurrent?.time);
+                case 3: return mTracks.OrderBy(num => num.Value.workCurrent?.creator);
+                case 4: return mTracks.OrderBy(num => num.Value.workCurrent?.access);
+                case 5: return mTracks.OrderBy(num => num.Value.workCurrent?.mainCate);
+                case 6: return mTracks.OrderBy(num => num.Value.workCurrent?.subCate);
+                case 7: return mTracks.OrderBy(num => num.Value.workCurrent?.title);
+                case 8: return mTracks.OrderBy(num => num.Value.workCurrent?.comment);
+                case 9: return mTracks.OrderBy(num => num.Value.workCurrent?.director);
+                case 10: return mTracks.OrderBy(num => num.Value.workCurrent?.worker);
+                case 11: return mTracks.OrderBy(num => num.Value.workCurrent?.state);
+                case 12: return mTracks.OrderBy(num => num.Value.workCurrent?.priority);
+                case COLUMN_COUNT-1: return mTracks.OrderBy(num => num.Value.workCurrent?.progress);
+                //case 14: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
+                //case 15: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
+                //case 16: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
                 default: return null;
             }
         }
@@ -227,7 +227,7 @@ namespace IWAS
             ICD.WorkList msg = (ICD.WorkList)obj;
 
             HEADER msgHis = new HEADER();
-            msgHis.FillClientHeader(DEF.CMD_TaskHistory, 0);
+            msgHis.FillClientHeader(DEF.CMD_TaskHistory);
 
             foreach (Work item in msg.works)
             {
@@ -267,46 +267,48 @@ namespace IWAS
             }
         }
 
-        private void AddItemToListView(Work work)
-        {
-            string[] field = new string[COLUMN_COUNT];
-
-            field[0] = work.recordID.ToString();
-            field[1] = work.type;
-            field[2] = new DateTime(work.time).ToString();
-            field[3] = work.creator;
-            field[4] = work.access;
-            field[5] = work.mainCate;
-            field[6] = work.subCate;
-            field[7] = work.title;
-            field[8] = work.comment;
-            field[9] = work.director;
-            field[10] = work.worker;
-            field[11] = work.state;
-            field[12] = work.priority;
-            field[COLUMN_COUNT-1] = work.progress.ToString();
-
-            lvTracking.Items.Add(new ListViewItem(field));
-        }
-
         private void UpdateTaskTracking()
         {
-            DateTime today = DateTime.Today;
+            DateTime currentTime = DateTime.Now;
             foreach (var item in mTracks)
             {
-                item.Value.Update(today);
+                item.Value.Update(currentTime);
             }
 
             var orderedList = OrderItems(mCurFilterColumnIndex);
             lvTracking.Items.Clear();
             foreach (var item in orderedList)
             {
-                if (IsHide(item.Value.workCurrent))
+                if (item.Value.workCurrent==null || IsHide(item.Value.workCurrent))
                     continue;
 
-                AddItemToListView(item.Value.workCurrent);
+                string[] row = ConvertToStringList(item.Value.workCurrent);
+                lvTracking.Items.Add(new ListViewItem(row));
             }
             
         }
+
+        private string[] ConvertToStringList(Work work)
+        {
+            string[] fields = new string[COLUMN_COUNT];
+
+            fields[0] = work.recordID.ToString();
+            fields[1] = work.type;
+            fields[2] = new DateTime(work.time).ToString();
+            fields[3] = work.creator;
+            fields[4] = work.access;
+            fields[5] = work.mainCate;
+            fields[6] = work.subCate;
+            fields[7] = work.title;
+            fields[8] = work.comment;
+            fields[9] = work.director;
+            fields[10] = work.worker;
+            fields[11] = work.state;
+            fields[12] = work.priority;
+            fields[COLUMN_COUNT - 1] = work.progress.ToString();
+
+            return fields;
+        }
+
     }
 }

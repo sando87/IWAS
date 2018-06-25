@@ -63,7 +63,7 @@ namespace IWAS
                 msgTask.title = tbTitle.Text;
                 msgTask.comment = tbComment.Text;
 
-                msgTask.timeFirst = DateTime.Today.Ticks;
+                msgTask.timeFirst = msg.msgTime;
                 msgTask.timeDone = DateTime.MaxValue.Ticks;
 
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);

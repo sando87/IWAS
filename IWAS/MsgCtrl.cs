@@ -179,16 +179,16 @@ namespace IWAS
                 data = item.toInfo.Split(',', (char)2);
                 if(item.columnName == "reportMid")
                 {
-                    int preTime = (int)taskBase["timeFirst"];
-                    int newTime = int.Parse(data[0]);
+                    long preTime = (long)taskBase["timeFirst"];
+                    long newTime = long.Parse(data[0]);
                     if (preTime > newTime)
                         DatabaseMgr.EditTaskBase(taskID, "timeFirst", data[0]);
                 }
                 else if (item.columnName == "confirmOK")
                 {
-                    int preTime = (int)taskBase["timeDone"];
-                    int newTime = int.Parse(data[0]);
-                    if (preTime == int.MaxValue || preTime < newTime)
+                    long preTime = (long)taskBase["timeDone"];
+                    long newTime = long.Parse(data[0]);
+                    if (preTime == long.MaxValue || preTime < newTime)
                         DatabaseMgr.EditTaskBase(taskID, "timeDone", data[0]);
                 }
             }
