@@ -46,8 +46,14 @@ namespace IWAS
                     return;
                 }
 
+                if(his == null)
+                {
+                    workCurrent = workBase.Clone();
+                    return;
+                }
+
                 reports.Clear();
-                workCurrent = workBase;
+                workCurrent = workBase.Clone();
                 long current = workOpen;
                 int i = 0;
                 while (current <= today && i < his.Length)
@@ -190,9 +196,6 @@ namespace IWAS
                 case 11: return mTracks.OrderBy(num => num.Value.workCurrent?.state);
                 case 12: return mTracks.OrderBy(num => num.Value.workCurrent?.priority);
                 case COLUMN_COUNT-1: return mTracks.OrderBy(num => num.Value.workCurrent?.progress);
-                //case 14: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
-                //case 15: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
-                //case 16: return mTracks.OrderBy(num => num.Value.workCurrent?.createTime);
                 default: return null;
             }
         }
@@ -260,7 +263,7 @@ namespace IWAS
         {
             ICD.WorkHistoryList msg = (ICD.WorkHistoryList)obj;
             
-            if(msg.workHistory.Length > 0)
+            if (msg.workHistory.Length > 0)
             {
                 int taskID = msg.workHistory[0].taskID;
                 if (!mTracks.ContainsKey(taskID))

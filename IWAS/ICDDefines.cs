@@ -624,6 +624,34 @@ namespace IWAS
             public string worker;
             public string state;
             public string priority;
+
+            public Work Clone()
+            {
+                Work obj = new Work();
+                obj.recordID = recordID;
+                obj.cmdID = cmdID;
+                obj.progress = progress;
+                obj.chatID = chatID;
+                obj.currentState = currentState;
+                obj.time = time;
+                obj.launch = launch;
+                obj.term = term;
+                obj.due = due;
+                obj.timeFirst = timeFirst;
+                obj.timeDone = timeDone;
+                obj.type = type;
+                obj.access = access;
+                obj.mainCate = mainCate;
+                obj.subCate = subCate;
+                obj.title = title;
+                obj.comment = comment;
+                obj.creator = creator;
+                obj.director = director;
+                obj.worker = worker;
+                obj.state = state;
+                obj.priority = priority;
+                return obj;
+            }
         }
 
         public class WorkList : HEADER

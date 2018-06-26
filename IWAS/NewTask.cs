@@ -64,7 +64,7 @@ namespace IWAS
                 msgTask.comment = tbComment.Text;
                 msgTask.state = "예정";
 
-                msg.msgTime = dtTerm.Value.Ticks;
+                //*//msg.msgTime = dtTerm.Value.Ticks;
 
                 msgTask.timeFirst = msg.msgTime;
                 msgTask.timeDone = DateTime.MaxValue.Ticks;

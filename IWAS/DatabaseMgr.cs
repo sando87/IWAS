@@ -209,7 +209,7 @@ namespace IWAS
 
             DataSet ds = new DataSet();
             if (adapter.Fill(ds, "TASKHis") == 0)
-                return null;
+                return new DataTable();
 
             return ds.Tables["TASKHis"];
         }
@@ -256,9 +256,9 @@ namespace IWAS
                     case "comment":     task.comment = item["toInfo"].ToString(); break;
                     case "director":    task.director = item["toInfo"].ToString(); break;
                     case "worker":      task.worker = item["toInfo"].ToString(); break;
-                    case "launch":      task.launch = (long)item["toInfo"]; break;
-                    case "due":         task.due = (long)item["toInfo"]; break;
-                    case "term":        task.term = (long)item["toInfo"]; break;
+                    case "launch":      task.launch = long.Parse(item["toInfo"].ToString()); break;
+                    case "due":         task.due = long.Parse(item["toInfo"].ToString()); break;
+                    case "term":        task.term = long.Parse(item["toInfo"].ToString()); break;
                     case "state":       task.state = item["toInfo"].ToString(); break;
                     case "priority":    task.priority = item["toInfo"].ToString(); break;
                     case "progress":    task.progress = (int)item["toInfo"]; break;
