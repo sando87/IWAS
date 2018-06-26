@@ -92,6 +92,7 @@ namespace IWAS
         Dictionary<int, TrackingInfo> mTracks = new Dictionary<int, TrackingInfo>();
         private int mCount = 0;
         private int mCurFilterColumnIndex = 0;
+        private DateTime mCurrentTime = new DateTime();
 
         public DlgTaskTracking()
         {
@@ -107,9 +108,10 @@ namespace IWAS
                 ICDPacketMgr.GetInst().OnRecv -= OnProcTaskHistroy;
             };
 
+            mCurrentTime = DateTime.Now;
             TimeSpan span = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
-            DateTime from = DateTime.Now - span;
-            DateTime to = DateTime.Now + span;
+            DateTime from = mCurrentTime - span;
+            DateTime to = mCurrentTime + span;
             RequestTaskList(from, to);
         }
 
@@ -279,10 +281,9 @@ namespace IWAS
 
         private void UpdateTaskTracking()
         {
-            DateTime currentTime = DateTime.Now;
             foreach (var item in mTracks)
             {
-                item.Value.Update(currentTime);
+                item.Value.Update(mCurrentTime);
             }
 
             var orderedList = OrderItems(mCurFilterColumnIndex);
@@ -320,5 +321,18 @@ namespace IWAS
             return fields;
         }
 
+        private void btnLater_Click(object sender, EventArgs e)
+        {
+            TimeSpan span = new TimeSpan(1, 0, 0, 0);
+            mCurrentTime += span;
+            UpdateTaskTracking();
+        }
+
+        private void btnAgo_Click(object sender, EventArgs e)
+        {
+            TimeSpan span = new TimeSpan(1, 0, 0, 0);
+            mCurrentTime -= span;
+            UpdateTaskTracking();
+        }
     }
 }

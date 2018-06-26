@@ -172,21 +172,22 @@ namespace IWAS
             DatabaseMgr.EditTask(msg);
             int taskID = msg.workHistory[0].taskID;
 
-            DataRow taskBase = DatabaseMgr.GetTaskRoot(taskID);
+            Work taskOne = new Work();
+            DatabaseMgr.GetTaskLatest(taskID, ref taskOne);
             foreach (var item in msg.workHistory)
             {
                 string[] data = new string[2];
                 data = item.toInfo.Split(',', (char)2);
                 if(item.columnName == "reportMid")
                 {
-                    long preTime = (long)taskBase["timeFirst"];
+                    long preTime = taskOne.timeFirst;
                     long newTime = long.Parse(data[0]);
-                    if (preTime > newTime)
+                    if (taskOne.state == "예정")
                         DatabaseMgr.EditTaskBase(taskID, "timeFirst", data[0]);
                 }
                 else if (item.columnName == "confirmOK")
                 {
-                    long preTime = (long)taskBase["timeDone"];
+                    long preTime = taskOne.timeDone;
                     long newTime = long.Parse(data[0]);
                     if (preTime == long.MaxValue || preTime < newTime)
                         DatabaseMgr.EditTaskBase(taskID, "timeDone", data[0]);

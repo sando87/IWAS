@@ -61,6 +61,7 @@
             this.btnAgo.TabIndex = 1;
             this.btnAgo.Text = "<";
             this.btnAgo.UseVisualStyleBackColor = true;
+            this.btnAgo.Click += new System.EventHandler(this.btnAgo_Click);
             // 
             // btnLater
             // 
@@ -70,6 +71,7 @@
             this.btnLater.TabIndex = 1;
             this.btnLater.Text = ">";
             this.btnLater.UseVisualStyleBackColor = true;
+            this.btnLater.Click += new System.EventHandler(this.btnLater_Click);
             // 
             // btnLaterFar
             // 

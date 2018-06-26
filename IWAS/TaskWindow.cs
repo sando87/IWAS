@@ -282,6 +282,9 @@ namespace IWAS
                 ICD.WorkHistoryList msg = new ICD.WorkHistoryList();
                 msg.FillClientHeader(ICD.DEF.CMD_TaskEdit, 0);
                 msg.workHistory = vec.ToArray();
+
+                msg.msgTime = dtTerm.Value.Ticks;
+
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
                 SendChatMessage("Task정보가 변경되었습니다.", true);
             }
@@ -444,6 +447,8 @@ namespace IWAS
                     msg.workHistory[0].columnName = (dlg.Type == "승인") ? "confirmOK" : "confirmNO";
                     msg.workHistory[0].toInfo = dlg.Msg;
                 }
+
+                msg.msgTime = dtTerm.Value.Ticks;
                 
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }

@@ -62,6 +62,9 @@ namespace IWAS
                 msgTask.worker = btnWorker.Text;
                 msgTask.title = tbTitle.Text;
                 msgTask.comment = tbComment.Text;
+                msgTask.state = "예정";
+
+                msg.msgTime = dtTerm.Value.Ticks;
 
                 msgTask.timeFirst = msg.msgTime;
                 msgTask.timeDone = DateTime.MaxValue.Ticks;
