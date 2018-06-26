@@ -144,7 +144,6 @@ namespace IWAS
             cbSubCate.Enabled   = isEn;
             cbMainCate.Enabled  = isEn;
             cbAccess.Enabled    = isEn;
-            cbType.Enabled      = isEn;
         }
         private void btnEdit_Click(object sender, EventArgs e)
         {
@@ -163,6 +162,16 @@ namespace IWAS
         private void sendEditInfo()
         {
             List<WorkHistory> vec = new List<WorkHistory>();
+            if (cbAccess.Text != mTask.access)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "access";
+                item.fromInfo = mTask.access;
+                item.toInfo = cbAccess.Text;
+                vec.Add(item);
+            }
             if (cbMainCate.Text != mTask.mainCate)
             {
                 WorkHistory item = new WorkHistory();
@@ -183,16 +192,6 @@ namespace IWAS
                 item.toInfo = cbSubCate.Text;
                 vec.Add(item);
             }
-            if (cbType.Text != mTask.type)
-            {
-                WorkHistory item = new WorkHistory();
-                item.taskID = mTask.recordID;
-                item.editor = MyInfo.mMyInfo.userID;
-                item.columnName = "type";
-                item.fromInfo = mTask.type;
-                item.toInfo = cbType.Text;
-                vec.Add(item);
-            }
             if (tbTitle.Text != mTask.title)
             {
                 WorkHistory item = new WorkHistory();
@@ -201,6 +200,16 @@ namespace IWAS
                 item.columnName = "title";
                 item.fromInfo = mTask.title;
                 item.toInfo = tbTitle.Text;
+                vec.Add(item);
+            }
+            if (tbComment.Text != mTask.comment)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "comment";
+                item.fromInfo = mTask.comment;
+                item.toInfo = tbComment.Text;
                 vec.Add(item);
             }
             if (btnDirector.Text != mTask.director)
@@ -223,12 +232,46 @@ namespace IWAS
                 item.toInfo = btnWorker.Text;
                 vec.Add(item);
             }
-            //if (cbPriority.Text != mTask.priority) msg.info += string.Format("priority:{0},", cbPriority.Text);
-            //if (cbAccess.Text != mTask.access) msg.info += string.Format("access:{0},", cbAccess.Text);
-            //if (tbComment.Text != mTask.comment) msg.info += string.Format("comment:{0},", tbComment.Text);
-            //if (tbLaunch.Text != mTask.launch) msg.info += string.Format("launch:{0},", tbLaunch.Text);
-            //if (tbTerm.Text != mTask.term) msg.info += string.Format("term:{0},", tbTerm.Text);
-            //if (tbDue.Text != mTask.due) msg.info += string.Format("term:{0},", tbDue.Text);
+            if (dtLaunch.Value.Ticks != mTask.launch)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "launch";
+                item.fromInfo = mTask.launch.ToString();
+                item.toInfo = dtLaunch.Value.Ticks.ToString();
+                vec.Add(item);
+            }
+            if (dtDue.Value.Ticks != mTask.due)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "due";
+                item.fromInfo = mTask.due.ToString();
+                item.toInfo = dtDue.Value.Ticks.ToString();
+                vec.Add(item);
+            }
+            if (dtTerm.Value.Ticks != mTask.term)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "term";
+                item.fromInfo = mTask.term.ToString();
+                item.toInfo = dtTerm.Value.Ticks.ToString();
+                vec.Add(item);
+            }
+            if (cbPriority.Text != mTask.priority)
+            {
+                WorkHistory item = new WorkHistory();
+                item.taskID = mTask.recordID;
+                item.editor = MyInfo.mMyInfo.userID;
+                item.columnName = "priority";
+                item.fromInfo = mTask.priority;
+                item.toInfo = cbPriority.Text;
+                vec.Add(item);
+            }
 
             if (vec.Count == 0)
             {

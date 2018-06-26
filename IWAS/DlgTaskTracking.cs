@@ -55,10 +55,20 @@ namespace IWAS
                     WorkHistory curHis = his[i];
                     switch (curHis.columnName)
                     {
+                        case "access": workCurrent.access = curHis.toInfo; break;
+                        case "mainCate": workCurrent.mainCate = curHis.toInfo; break;
+                        case "subCate": workCurrent.subCate = curHis.toInfo; break;
                         case "title": workCurrent.title = curHis.toInfo; break;
+                        case "comment": workCurrent.comment = curHis.toInfo; break;
+                        case "director": workCurrent.director = curHis.toInfo; break;
+                        case "worker": workCurrent.worker = curHis.toInfo; break;
                         case "launch": workCurrent.launch = long.Parse(curHis.toInfo); break;
                         case "due": workCurrent.due = long.Parse(curHis.toInfo); break;
                         case "term": workCurrent.term = long.Parse(curHis.toInfo); break;
+                        case "state": workCurrent.state = curHis.toInfo; break;
+                        case "priority": workCurrent.priority = curHis.toInfo; break;
+                        case "progress": workCurrent.progress = int.Parse(curHis.toInfo); break;
+                        case "chatID": workCurrent.chatID = int.Parse(curHis.toInfo); break;
                         case "reportMid":
                         case "reportDone":
                             {
