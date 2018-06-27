@@ -121,9 +121,9 @@ namespace IWAS
             btnDirector.Text = mTask.director;
             tbComment.Text = mTask.comment;
             tbTitle.Text = mTask.title;
-            dtLaunch.Value = new DateTime(mTask.launch);
-            dtDue.Value = new DateTime(mTask.due);
-            dtTerm.Value = new DateTime(mTask.term);
+            dtLaunch.Value = DateTime.Parse(mTask.launch);
+            dtDue.Value = DateTime.Parse(mTask.due);
+            dtTerm.Value = DateTime.Parse(mTask.term);
             cbPriority.Text = mTask.priority;
             cbSubCate.Text = mTask.subCate;
             cbMainCate.Text = mTask.mainCate;
@@ -232,34 +232,34 @@ namespace IWAS
                 item.toInfo = btnWorker.Text;
                 vec.Add(item);
             }
-            if (dtLaunch.Value.Ticks != mTask.launch)
+            if (dtLaunch.Value.Ticks != DateTime.Parse(mTask.launch).Ticks)
             {
                 WorkHistory item = new WorkHistory();
                 item.taskID = mTask.recordID;
                 item.editor = MyInfo.mMyInfo.userID;
                 item.columnName = "launch";
                 item.fromInfo = mTask.launch.ToString();
-                item.toInfo = dtLaunch.Value.Ticks.ToString();
+                item.toInfo = dtLaunch.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 vec.Add(item);
             }
-            if (dtDue.Value.Ticks != mTask.due)
+            if (dtDue.Value.Ticks != DateTime.Parse(mTask.due).Ticks)
             {
                 WorkHistory item = new WorkHistory();
                 item.taskID = mTask.recordID;
                 item.editor = MyInfo.mMyInfo.userID;
                 item.columnName = "due";
                 item.fromInfo = mTask.due.ToString();
-                item.toInfo = dtDue.Value.Ticks.ToString();
+                item.toInfo = dtDue.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 vec.Add(item);
             }
-            if (dtTerm.Value.Ticks != mTask.term)
+            if (dtTerm.Value.Ticks != DateTime.Parse(mTask.term).Ticks)
             {
                 WorkHistory item = new WorkHistory();
                 item.taskID = mTask.recordID;
                 item.editor = MyInfo.mMyInfo.userID;
                 item.columnName = "term";
                 item.fromInfo = mTask.term.ToString();
-                item.toInfo = dtTerm.Value.Ticks.ToString();
+                item.toInfo = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 vec.Add(item);
             }
             if (cbPriority.Text != mTask.priority)
@@ -283,7 +283,7 @@ namespace IWAS
                 msg.FillClientHeader(ICD.DEF.CMD_TaskEdit, 0);
                 msg.workHistory = vec.ToArray();
 
-                //*//msg.msgTime = dtTerm.Value.Ticks;
+                msg.msgTime = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
 
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
                 SendChatMessage("Task정보가 변경되었습니다.", true);
@@ -448,8 +448,8 @@ namespace IWAS
                     msg.workHistory[0].toInfo = dlg.Time.ToString() + "," + dlg.Msg;
                 }
 
-                //*//msg.msgTime = dtTerm.Value.Ticks;
-                
+                msg.msgTime = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
+
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
         }

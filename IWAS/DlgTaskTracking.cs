@@ -18,7 +18,7 @@ namespace IWAS
 
         class ReportInfo
         {
-            public long time;
+            public DateTime time;
             public string type;
             public string message;
         }
@@ -36,9 +36,9 @@ namespace IWAS
                 long from = date.Ticks - span.Ticks;
                 long to = date.Ticks + span.Ticks;
                 long today = date.Ticks;
-                long workCreate = workBase.time;
-                long workOpen = workBase.timeFirst;
-                long workClose = workBase.timeDone;
+                long workCreate = DateTime.Parse(workBase.time).Ticks;
+                long workOpen = DateTime.Parse(workBase.timeFirst).Ticks;
+                long workClose = DateTime.Parse(workBase.timeDone).Ticks;
                 if (to < workOpen || workClose < from || today < workCreate)
                 {
                     workCurrent = null;
@@ -46,7 +46,7 @@ namespace IWAS
                     return;
                 }
 
-                if(his == null)
+                if(his == null || his.Length == 0)
                 {
                     workCurrent = workBase.Clone();
                     return;
@@ -54,7 +54,7 @@ namespace IWAS
 
                 reports.Clear();
                 workCurrent = workBase.Clone();
-                long current = workOpen;
+                long current = DateTime.Parse(his[0].time).Ticks;
                 int i = 0;
                 while (current <= today && i < his.Length)
                 {
@@ -68,30 +68,43 @@ namespace IWAS
                         case "comment": workCurrent.comment = curHis.toInfo; break;
                         case "director": workCurrent.director = curHis.toInfo; break;
                         case "worker": workCurrent.worker = curHis.toInfo; break;
-                        case "launch": workCurrent.launch = long.Parse(curHis.toInfo); break;
-                        case "due": workCurrent.due = long.Parse(curHis.toInfo); break;
-                        case "term": workCurrent.term = long.Parse(curHis.toInfo); break;
+                        case "launch": workCurrent.launch = curHis.toInfo; break;
+                        case "due": workCurrent.due = curHis.toInfo; break;
+                        case "term": workCurrent.term = curHis.toInfo; break;
                         case "state": workCurrent.state = curHis.toInfo; break;
                         case "priority": workCurrent.priority = curHis.toInfo; break;
                         case "progress": workCurrent.progress = int.Parse(curHis.toInfo); break;
                         case "chatID": workCurrent.chatID = int.Parse(curHis.toInfo); break;
                         case "reportMid":
                         case "reportDone":
+                        case "confirmOK":
+                        case "confirmNO":
                             {
                                 string[] data = curHis.toInfo.Split(',', (char)2);
                                 ReportInfo rep = new ReportInfo();
-                                rep.time = long.Parse( data[0] );
+                                rep.time = DateTime.Parse( data[0] );
                                 rep.type = curHis.columnName;
                                 rep.message = data[1];
                                 reports.Add(rep);
+                                UpdateWorkState(workCurrent, rep.type);
                             }
                             break;
                         default: break;
                     }
-                    current = curHis.time;
+                    current = DateTime.Parse(curHis.time).Ticks;
                     i++;
                 }
 
+            }
+            private void UpdateWorkState(Work work, string type)
+            {
+                switch (type)
+                {
+                    case "reportMid": work.state = "진행"; break;
+                    case "reportDone": work.state = "완료대기"; break;
+                    case "confirmOK": work.state = "완료"; break;
+                    case "confirmNO": work.state = "진행"; break;
+                }
             }
         }
 
@@ -126,8 +139,8 @@ namespace IWAS
             HEADER msg = new HEADER();
             msg.FillClientHeader(DEF.CMD_TaskBaseList);
 
-            msg.ext1 = from.Ticks.ToString();
-            msg.ext2 = to.Ticks.ToString();
+            msg.ext1 = from.ToString("yyyy-MM-dd HH:mm:ss");
+            msg.ext2 = to.ToString("yyyy-MM-dd HH:mm:ss");
 
             ICDPacketMgr.GetInst().sendMsgToServer(msg);
         }
@@ -284,6 +297,7 @@ namespace IWAS
 
         private void UpdateTaskTracking()
         {
+            lbTodayDate.Text = mCurrentTime.ToString("yyyy-MM-dd HH:mm:ss");
             foreach (var item in mTracks)
             {
                 item.Value.Update(mCurrentTime);
@@ -308,7 +322,7 @@ namespace IWAS
 
             fields[0] = work.recordID.ToString();
             fields[1] = work.type;
-            fields[2] = new DateTime(work.time).ToString();
+            fields[2] = work.time;
             fields[3] = work.creator;
             fields[4] = work.access;
             fields[5] = work.mainCate;
@@ -337,5 +351,6 @@ namespace IWAS
             mCurrentTime -= span;
             UpdateTaskTracking();
         }
+
     }
 }

@@ -14,7 +14,7 @@ namespace IWAS
     {
         public bool mIsOK = false;
         public string Type { get; set; }
-        public long Time { get; set; }
+        public string Time { get; set; }
         public string Msg { get; set; }
 
         public DlgReportTask(bool isReportType)
@@ -42,7 +42,7 @@ namespace IWAS
         {
             mIsOK = true;
             Type = cbType.Text;
-            Time = dtReport.Value.Ticks;
+            Time = dtReport.Value.ToString("yyyy-MM-dd HH:mm:ss");
             Msg = tbComment.Text;
             Close();
         }

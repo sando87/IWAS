@@ -34,6 +34,7 @@
             this.btnLater = new System.Windows.Forms.Button();
             this.btnLaterFar = new System.Windows.Forms.Button();
             this.btnSetting = new System.Windows.Forms.Button();
+            this.lbTodayDate = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lvTracking
@@ -91,11 +92,21 @@
             this.btnSetting.Text = "Setting";
             this.btnSetting.UseVisualStyleBackColor = true;
             // 
+            // lbTodayDate
+            // 
+            this.lbTodayDate.AutoSize = true;
+            this.lbTodayDate.Location = new System.Drawing.Point(336, 27);
+            this.lbTodayDate.Name = "lbTodayDate";
+            this.lbTodayDate.Size = new System.Drawing.Size(38, 12);
+            this.lbTodayDate.TabIndex = 2;
+            this.lbTodayDate.Text = "label1";
+            // 
             // DlgTaskTracking
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(818, 496);
+            this.Controls.Add(this.lbTodayDate);
             this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.btnLaterFar);
             this.Controls.Add(this.btnLater);
@@ -106,6 +117,7 @@
             this.Text = "DlgTaskTracking";
             this.Load += new System.EventHandler(this.DlgTaskTracking_Load);
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -117,5 +129,6 @@
         private System.Windows.Forms.Button btnLater;
         private System.Windows.Forms.Button btnLaterFar;
         private System.Windows.Forms.Button btnSetting;
+        private System.Windows.Forms.Label lbTodayDate;
     }
 }

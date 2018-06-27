@@ -52,9 +52,9 @@ namespace IWAS
                 msgTask.mainCate = cbMainCate.Text;
                 msgTask.subCate = cbSubCate.Text;
                 //formatting date
-                msgTask.launch = dtLaunch.Value.Ticks;
-                msgTask.due = dtDue.Value.Ticks;
-                msgTask.term = dtTerm.Value.Ticks;
+                msgTask.launch = dtLaunch.Value.ToString("yyyy-MM-dd HH:mm:ss");
+                msgTask.due = dtDue.Value.ToString("yyyy-MM-dd HH:mm:ss");
+                msgTask.term = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
                 msgTask.priority = cbPriority.Text;
                 //user listing
                 msgTask.creator = MyInfo.mMyInfo.userID;
@@ -64,10 +64,10 @@ namespace IWAS
                 msgTask.comment = tbComment.Text;
                 msgTask.state = "예정";
 
-                //*//msg.msgTime = dtTerm.Value.Ticks;
+                msg.msgTime = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
 
                 msgTask.timeFirst = msg.msgTime;
-                msgTask.timeDone = DateTime.MaxValue.Ticks;
+                msgTask.timeDone = DateTime.MaxValue.ToString("yyyy-MM-dd HH:mm:ss");
 
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
