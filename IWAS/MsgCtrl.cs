@@ -172,26 +172,11 @@ namespace IWAS
             DatabaseMgr.EditTask(msg);
             int taskID = msg.workHistory[0].taskID;
 
-            Work taskOne = new Work();
-            DatabaseMgr.GetTaskLatest(taskID, ref taskOne);
-            foreach (var item in msg.workHistory)
+            if ((msg.workHistory.Length == 1) && (msg.workHistory[0].columnName == "confirmOK"))
             {
                 string[] data = new string[2];
-                data = item.toInfo.Split(',', (char)2);
-                if(item.columnName == "reportMid")
-                {
-                    long preTime = DateTime.Parse(taskOne.timeFirst).Ticks;
-                    long newTime = DateTime.Parse(data[0]).Ticks;
-                    if (taskOne.state == "예정")
-                        DatabaseMgr.EditTaskBase(taskID, "timeFirst", data[0]);
-                }
-                else if (item.columnName == "confirmOK")
-                {
-                    long preTime = DateTime.Parse(taskOne.timeDone).Ticks;
-                    long newTime = DateTime.Parse(data[0]).Ticks;
-                    if (preTime == long.MaxValue || preTime < newTime)
-                        DatabaseMgr.EditTaskBase(taskID, "timeDone", data[0]);
-                }
+                data = msg.workHistory[0].toInfo.Split(',', (char)2);
+                DatabaseMgr.EditTaskBase(taskID, "timeDone", data[0]);
             }
 
             ICD.WorkList task = new ICD.WorkList();

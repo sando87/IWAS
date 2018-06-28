@@ -30,16 +30,13 @@ namespace IWAS
             public WorkHistory[] his;
             public List<ReportInfo> reports = new List<ReportInfo>();
 
-            public void Update(DateTime date)
+            public void Update(DateTime today)
             {
                 TimeSpan span = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
-                long from = date.Ticks - span.Ticks;
-                long to = date.Ticks + span.Ticks;
-                long today = date.Ticks;
-                long workCreate = DateTime.Parse(workBase.time).Ticks;
-                long workOpen = DateTime.Parse(workBase.timeFirst).Ticks;
-                long workClose = DateTime.Parse(workBase.timeDone).Ticks;
-                if (to < workOpen || workClose < from || today < workCreate)
+                DateTime from = today - span;
+                DateTime workCreate = DateTime.Parse(workBase.time);
+                DateTime workClose = DateTime.Parse(workBase.timeDone);
+                if (workClose < from || today < workCreate)
                 {
                     workCurrent = null;
                     reports.Clear();
@@ -54,11 +51,12 @@ namespace IWAS
 
                 reports.Clear();
                 workCurrent = workBase.Clone();
-                long current = DateTime.Parse(his[0].time).Ticks;
-                int i = 0;
-                while (current <= today && i < his.Length)
+                foreach(var item in his)
                 {
-                    WorkHistory curHis = his[i];
+                    if (today < DateTime.Parse(item.time))
+                        break;
+
+                    WorkHistory curHis = item;
                     switch (curHis.columnName)
                     {
                         case "access": workCurrent.access = curHis.toInfo; break;
@@ -75,36 +73,23 @@ namespace IWAS
                         case "priority": workCurrent.priority = curHis.toInfo; break;
                         case "progress": workCurrent.progress = int.Parse(curHis.toInfo); break;
                         case "chatID": workCurrent.chatID = int.Parse(curHis.toInfo); break;
-                        case "reportMid":
-                        case "reportDone":
-                        case "confirmOK":
-                        case "confirmNO":
-                            {
-                                string[] data = curHis.toInfo.Split(',', (char)2);
-                                ReportInfo rep = new ReportInfo();
-                                rep.time = DateTime.Parse( data[0] );
-                                rep.type = curHis.columnName;
-                                rep.message = data[1];
-                                reports.Add(rep);
-                                UpdateWorkState(workCurrent, rep.type);
-                            }
-                            break;
+                        case "reportMid": workCurrent.state = "진행"; AddReportState(curHis); break;
+                        case "reportDone": workCurrent.state = "완료대기"; AddReportState(curHis); break;
+                        case "confirmOK": workCurrent.state = "완료"; break;
+                        case "confirmNO": workCurrent.state = "진행"; break;
                         default: break;
                     }
-                    current = DateTime.Parse(curHis.time).Ticks;
-                    i++;
-                }
 
-            }
-            private void UpdateWorkState(Work work, string type)
-            {
-                switch (type)
-                {
-                    case "reportMid": work.state = "진행"; break;
-                    case "reportDone": work.state = "완료대기"; break;
-                    case "confirmOK": work.state = "완료"; break;
-                    case "confirmNO": work.state = "진행"; break;
                 }
+            }
+            private void AddReportState(WorkHistory workHis)
+            {
+                string[] data = workHis.toInfo.Split(',', (char)2);
+                ReportInfo rep = new ReportInfo();
+                rep.time = DateTime.Parse(data[0]);
+                rep.type = workHis.columnName;
+                rep.message = data[1];
+                reports.Add(rep);
             }
         }
 
@@ -152,11 +137,13 @@ namespace IWAS
             lvTracking.GridLines = true;
             lvTracking.FullRowSelect = true;
             lvTracking.Sorting = SortOrder.None;
+            lvTracking.OwnerDraw = true;
 
             lvTracking.ColumnClick += (ss, ee) => {
                 mCurFilterColumnIndex = ee.Column;
             };
-            //lvTracking.DrawSubItem += My_DrawSubItem;
+            lvTracking.DrawSubItem += My_DrawSubItem;
+            lvTracking.DrawColumnHeader += LvTracking_DrawColumnHeader;
 
             lvTracking.Columns.Add("id");
             lvTracking.Columns[0].Width = 50;
@@ -221,17 +208,67 @@ namespace IWAS
                 return true;
         }
 
+        private void LvTracking_DrawColumnHeader(object sender, DrawListViewColumnHeaderEventArgs e)
+        {
+            e.DrawDefault = true;
+        }
+
         private void My_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
             if (e.ColumnIndex != 9)
                 e.DrawDefault = true;
             else
             {
+                string recordID = lvTracking.Items[e.Item.Index].SubItems[0].Text;
+                int id = int.Parse(recordID);
+                TrackingInfo info = mTracks[id];
                 Rectangle rect = e.Bounds;
-                e.Graphics.FillRectangle(Brushes.Red, e.Bounds);
-                //ee.Graphics.FillRectangle(Brushes.Red, rect.Left + 2, rect.Top + 2, rect.Width - 4, rect.Height - 4);
-                e.Graphics.FillRectangle(Brushes.Blue, rect.Left + 2, rect.Top + 4, rect.Width - 4, rect.Height - 8);
+                DateTime launch = DateTime.Parse(info.workCurrent.launch);
+                DateTime due = DateTime.Parse(info.workCurrent.due);
+                TimeSpan term = due - launch;
+                int left = GetLeft(launch, rect);
+                int width = GetWidth(term, rect);
+                if(left<0)
+                {
+                    width += left;
+                    left = 0;
+                }
+                e.Graphics.FillRectangle(Brushes.Gray, rect.Left + left, rect.Top + 2, width, rect.Height - 4);
+
+                TimeSpan one = new TimeSpan(1, 0, 0, 0);
+                foreach (var item in info.reports)
+                {
+                    int repLeft = GetLeft(item.time, rect);
+                    int repWidth = GetWidth(one, rect);
+                    if (repLeft < 0)
+                    {
+                        repWidth += repLeft;
+                        repLeft = 0;
+                    }
+                    e.Graphics.FillRectangle(Brushes.Green, rect.Left + repLeft, rect.Top + 4, repWidth, rect.Height - 8);
+                }
+
+                int widthHalf = rect.Width / 2;
+                e.Graphics.FillRectangle(Brushes.Red, rect.Left + widthHalf, rect.Top, 2, rect.Height);
             }
+        }
+
+        private int GetLeft(DateTime date, Rectangle rect)
+        {
+            TimeSpan spanHalf = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
+            TimeSpan spanTotal = new TimeSpan(VIEW_PERIOD * 2, 0, 0, 0);
+            DateTime from = mCurrentTime - spanHalf;
+            TimeSpan spanFront = date - from;
+            double rate = (double)spanFront.Ticks / (double)spanTotal.Ticks;
+            double left = (double)rect.Width * rate;
+            return (int)left;
+        }
+        private int GetWidth(TimeSpan span, Rectangle rect)
+        {
+            TimeSpan spanTotal = new TimeSpan(VIEW_PERIOD * 2, 0, 0, 0);
+            double rate = (double)span.Ticks / (double)spanTotal.Ticks;
+            double left = (double)rect.Width * rate;
+            return (int)left;
         }
 
         private void OnProcTaskHistroy(int clientID, HEADER obj)
