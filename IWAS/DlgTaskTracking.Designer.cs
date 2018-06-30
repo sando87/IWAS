@@ -34,14 +34,13 @@
             this.btnLater = new System.Windows.Forms.Button();
             this.btnLaterFar = new System.Windows.Forms.Button();
             this.btnSetting = new System.Windows.Forms.Button();
-            this.lbTodayDate = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // lvTracking
             // 
             this.lvTracking.Location = new System.Drawing.Point(12, 51);
             this.lvTracking.Name = "lvTracking";
-            this.lvTracking.Size = new System.Drawing.Size(793, 432);
+            this.lvTracking.Size = new System.Drawing.Size(1036, 432);
             this.lvTracking.TabIndex = 0;
             this.lvTracking.UseCompatibleStateImageBehavior = false;
             // 
@@ -85,28 +84,18 @@
             // 
             // btnSetting
             // 
-            this.btnSetting.Location = new System.Drawing.Point(730, 22);
+            this.btnSetting.Location = new System.Drawing.Point(468, 22);
             this.btnSetting.Name = "btnSetting";
             this.btnSetting.Size = new System.Drawing.Size(75, 23);
             this.btnSetting.TabIndex = 1;
             this.btnSetting.Text = "Setting";
             this.btnSetting.UseVisualStyleBackColor = true;
             // 
-            // lbTodayDate
-            // 
-            this.lbTodayDate.AutoSize = true;
-            this.lbTodayDate.Location = new System.Drawing.Point(336, 27);
-            this.lbTodayDate.Name = "lbTodayDate";
-            this.lbTodayDate.Size = new System.Drawing.Size(38, 12);
-            this.lbTodayDate.TabIndex = 2;
-            this.lbTodayDate.Text = "label1";
-            // 
             // DlgTaskTracking
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(818, 496);
-            this.Controls.Add(this.lbTodayDate);
+            this.ClientSize = new System.Drawing.Size(1060, 496);
             this.Controls.Add(this.btnSetting);
             this.Controls.Add(this.btnLaterFar);
             this.Controls.Add(this.btnLater);
@@ -117,7 +106,6 @@
             this.Text = "DlgTaskTracking";
             this.Load += new System.EventHandler(this.DlgTaskTracking_Load);
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -129,6 +117,5 @@
         private System.Windows.Forms.Button btnLater;
         private System.Windows.Forms.Button btnLaterFar;
         private System.Windows.Forms.Button btnSetting;
-        private System.Windows.Forms.Label lbTodayDate;
     }
 }

@@ -14,7 +14,7 @@ namespace IWAS
     public partial class DlgTaskTracking : Form
     {
         private const int VIEW_PERIOD = 15; //오늘 기준 15일 전후로 보여준다
-        private const int COLUMN_COUNT = 14;
+        private const int COLUMN_COUNT = 15;
 
         class ReportInfo
         {
@@ -105,6 +105,8 @@ namespace IWAS
 
         private void DlgTaskTracking_Load(object sender, EventArgs e)
         {
+            mCurrentTime = DateTime.Now;
+
             InitListViews();
 
             ICDPacketMgr.GetInst().OnRecv += OnProcTaskHistroy;
@@ -112,7 +114,6 @@ namespace IWAS
                 ICDPacketMgr.GetInst().OnRecv -= OnProcTaskHistroy;
             };
 
-            mCurrentTime = DateTime.Now;
             TimeSpan span = new TimeSpan(VIEW_PERIOD, 0, 0, 0);
             DateTime from = mCurrentTime - span;
             DateTime to = mCurrentTime + span;
@@ -141,41 +142,43 @@ namespace IWAS
 
             lvTracking.ColumnClick += (ss, ee) => {
                 mCurFilterColumnIndex = ee.Column;
+                SortList(mCurFilterColumnIndex);
             };
             lvTracking.DrawSubItem += My_DrawSubItem;
             lvTracking.DrawColumnHeader += LvTracking_DrawColumnHeader;
 
             lvTracking.Columns.Add("id");
-            lvTracking.Columns[0].Width = 50;
+            lvTracking.Columns[0].Width = 0;
             lvTracking.Columns.Add("type");
             lvTracking.Columns[1].Width = 100;
             lvTracking.Columns.Add("time");
             lvTracking.Columns[2].Width = 0;
             lvTracking.Columns.Add("creator");
-            lvTracking.Columns[3].Width = 100;
+            lvTracking.Columns[3].Width = 0;
             lvTracking.Columns.Add("access");
-            lvTracking.Columns[4].Width = 100;
+            lvTracking.Columns[4].Width = 0;
             lvTracking.Columns.Add("mainCate");
             lvTracking.Columns[5].Width = 100;
             lvTracking.Columns.Add("subCate");
-            lvTracking.Columns[6].Width = 100;
+            lvTracking.Columns[6].Width = 0;
             lvTracking.Columns.Add("title");
             lvTracking.Columns[7].Width = 100;
             lvTracking.Columns.Add("comment");
-            lvTracking.Columns[8].Width = 100;
+            lvTracking.Columns[8].Width = 0;
             lvTracking.Columns.Add("director");
-            lvTracking.Columns[9].Width = 100;
+            lvTracking.Columns[9].Width = 0;
             lvTracking.Columns.Add("worker");
-            lvTracking.Columns[10].Width = 100;
-            lvTracking.Columns.Add("state");
-            lvTracking.Columns[11].Width = 100;
-            lvTracking.Columns.Add("priority");
-            lvTracking.Columns[12].Width = 100;
+            lvTracking.Columns[10].Width = 0;
             lvTracking.Columns.Add("progress");
-            lvTracking.Columns[COLUMN_COUNT-1].Width = 100;
+            lvTracking.Columns[11].Width = 0;
+            lvTracking.Columns.Add("priority");
+            lvTracking.Columns[12].Width = 0;
+            lvTracking.Columns.Add("state");
+            lvTracking.Columns[13].Width = 100;
 
-
-            
+            lvTracking.Columns.Add(mCurrentTime.ToString("yyyy-MM-dd HH:mm:ss"));
+            lvTracking.Columns[COLUMN_COUNT - 1].TextAlign = HorizontalAlignment.Center;
+            lvTracking.Columns[COLUMN_COUNT - 1].Width = 600;
         }
 
         private IOrderedEnumerable<KeyValuePair<int,TrackingInfo>> OrderItems(int columnIndex)
@@ -215,7 +218,7 @@ namespace IWAS
 
         private void My_DrawSubItem(object sender, DrawListViewSubItemEventArgs e)
         {
-            if (e.ColumnIndex != 9)
+            if (e.ColumnIndex != 14)
                 e.DrawDefault = true;
             else
             {
@@ -334,23 +337,27 @@ namespace IWAS
 
         private void UpdateTaskTracking()
         {
-            lbTodayDate.Text = mCurrentTime.ToString("yyyy-MM-dd HH:mm:ss");
+            lvTracking.Columns[COLUMN_COUNT - 1].Text = mCurrentTime.ToString("yyyy-MM-dd HH:mm:ss");
             foreach (var item in mTracks)
             {
                 item.Value.Update(mCurrentTime);
             }
 
-            var orderedList = OrderItems(mCurFilterColumnIndex);
+            SortList(mCurFilterColumnIndex);
+        }
+
+        private void SortList(int index)
+        {
+            var orderedList = OrderItems(index);
             lvTracking.Items.Clear();
             foreach (var item in orderedList)
             {
-                if (item.Value.workCurrent==null || IsHide(item.Value.workCurrent))
+                if (item.Value.workCurrent == null || IsHide(item.Value.workCurrent))
                     continue;
 
                 string[] row = ConvertToStringList(item.Value.workCurrent);
                 lvTracking.Items.Add(new ListViewItem(row));
             }
-            
         }
 
         private string[] ConvertToStringList(Work work)
@@ -368,9 +375,10 @@ namespace IWAS
             fields[8] = work.comment;
             fields[9] = work.director;
             fields[10] = work.worker;
-            fields[11] = work.state;
+            fields[11] = work.progress.ToString();
             fields[12] = work.priority;
-            fields[COLUMN_COUNT - 1] = work.progress.ToString();
+            fields[13] = work.state;
+            fields[COLUMN_COUNT - 1] = "";
 
             return fields;
         }

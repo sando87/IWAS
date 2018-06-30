@@ -182,8 +182,12 @@ namespace IWAS
 
             ICD.WorkList task = (ICD.WorkList)obj;
             foreach(var item in task.works)
-                mTasks[item.recordID] = item;
-            
+            {
+                if (item.state == "완료")
+                    mTasks.Remove(item.recordID);
+                else
+                    mTasks[item.recordID] = item;
+            }
             UpdateTaskList();
         }
 

@@ -69,7 +69,11 @@ namespace IWAS
 
                 mTask = msg.works[0];
                 updateTaskInfo();
-                if (mTask.state == "완료대기" && mTask.director == MyInfo.mMyInfo.userID)
+                if (mTask.state == "완료")
+                {
+                    Close();
+                }
+                else if (mTask.state == "완료대기" && mTask.director == MyInfo.mMyInfo.userID)
                 {
                     btnReport.Text = "확인";
                     btnReport.Enabled = true;
@@ -162,6 +166,8 @@ namespace IWAS
         private void sendEditInfo()
         {
             List<WorkHistory> vec = new List<WorkHistory>();
+            List<string> newUsers = new List<string>();
+
             if (cbAccess.Text != mTask.access)
             {
                 WorkHistory item = new WorkHistory();
@@ -221,6 +227,7 @@ namespace IWAS
                 item.fromInfo = mTask.director;
                 item.toInfo = btnDirector.Text;
                 vec.Add(item);
+                newUsers.Add(item.toInfo);
             }
             if (btnWorker.Text != mTask.worker)
             {
@@ -231,6 +238,7 @@ namespace IWAS
                 item.fromInfo = mTask.worker;
                 item.toInfo = btnWorker.Text;
                 vec.Add(item);
+                newUsers.Add(item.toInfo);
             }
             if (dtLaunch.Value.Ticks != DateTime.Parse(mTask.launch).Ticks)
             {
@@ -279,14 +287,28 @@ namespace IWAS
             }
             else
             {
+                if(newUsers.Count > 0)
+                {
+                    ChatRoomInfo addUserMsg = new ChatRoomInfo();
+                    addUserMsg.FillClientHeader(DEF.CMD_AddChatUsers, 0);
+                    addUserMsg.body.recordID = mTask.chatID;
+                    addUserMsg.body.users = newUsers.ToArray();
+                    ICDPacketMgr.GetInst().sendMsgToServer(addUserMsg);
+                }
+
                 ICD.WorkHistoryList msg = new ICD.WorkHistoryList();
                 msg.FillClientHeader(ICD.DEF.CMD_TaskEdit, 0);
                 msg.workHistory = vec.ToArray();
-
-                msg.msgTime = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
-
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
-                SendChatMessage("Task정보가 변경되었습니다.", true);
+
+                string editedInfo = "  <Task 변경>\n";
+                foreach(var item in msg.workHistory)
+                {
+                    string info = string.Format("[{0}] : {1} => {2}\n",
+                        item.columnName, item.fromInfo, item.toInfo);
+                    editedInfo += info;
+                }
+                SendChatMessage(editedInfo, true);
             }
             
         }
@@ -440,16 +462,16 @@ namespace IWAS
                 if(typeReport)
                 {
                     msg.workHistory[0].columnName = (dlg.Type == "중간보고") ? "reportMid" : "reportDone";
-                    msg.workHistory[0].toInfo = dlg.Time.ToString() + "," + dlg.Msg;
+                    msg.workHistory[0].toInfo = dlg.Time + "," + dlg.Msg;
                 }
                 else
                 {
                     msg.workHistory[0].columnName = (dlg.Type == "승인") ? "confirmOK" : "confirmNO";
-                    msg.workHistory[0].toInfo = dlg.Time.ToString() + "," + dlg.Msg;
+                    msg.workHistory[0].toInfo = dlg.Time + "," + dlg.Msg;
                 }
 
-                msg.msgTime = dtTerm.Value.ToString("yyyy-MM-dd HH:mm:ss");
-
+                string info = string.Format("[{0}] : {1}", msg.workHistory[0].columnName, msg.workHistory[0].toInfo);
+                SendChatMessage(info, true);
                 ICDPacketMgr.GetInst().sendMsgToServer(msg);
             }
         }
